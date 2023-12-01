@@ -96,5 +96,3 @@ class StatutNotification(models.Model):
     id_etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE)
     status = models.CharField(max_length=255, choices=[('vue', 'Vue'), ('nonvue', 'Non vue')])
 
-
-#Hello 
