@@ -97,3 +97,4 @@ class StatutNotification(models.Model):
     status = models.CharField(max_length=255, choices=[('vue', 'Vue'), ('nonvue', 'Non vue')])
 
 
+#Hello 
