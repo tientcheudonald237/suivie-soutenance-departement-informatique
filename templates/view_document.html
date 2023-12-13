@@ -22,8 +22,11 @@
 {% endblock %}
 
 {% block template %}
-    <h1>{{ document.title }}</h1>
-    {{ document.media }}
+   <form action="">
+    {{ myform.media }}
+    {{ myform.as_p }}
+    <input type="submit"/>
+   </form>
 {% endblock %}
 
 {% block script %}

@@ -49,7 +49,8 @@ def create_document(request):
     return render(request, 'index.html')
 
 def view_document(request,id):
-    document = get_object_or_404(Document, id=id)
+    # document = get_object_or_404(Document, id=id)
+    document = Document()
     user_documents = Document.objects.filter(user=request.user)
     context = {
         'document': document,
