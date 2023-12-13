@@ -2,12 +2,30 @@
 
 {% block title %} Gestion de projet {% endblock %}
 
+{% block sidebar %}
+    <li class="menu-header">REPERTOIRE</li>
+    {% if user.is_authenticated %}
+        <li class="dropdown">
+            <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Mes Documents</span></a>
+            <ul class="dropdown-menu">
+                {% for document in user_documents %}
+                    <li><a class="nav-link" href="{% url 'view_document' id=document.id %}"><i class="material-icons">insert_drive_file</i><span>{{ document.title }}</span></a></li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% else %}
+        <h1>Welcome, Guest!</h1>
+        <p>Please log in to access your documents.</p>
+    {% endif %}
+{% endblock %}
+
 {% block template %}
-    
+
+
 {% endblock %}
 
 {% block script %}
-    <script>
+<script>
 
-    </script>
+</script>
 {% endblock %}

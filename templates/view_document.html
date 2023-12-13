@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %} Gestion de projet {% endblock %}
+
+{% block sidebar %}
+    <li class="menu-header">REPERTOIRE</li>
+    {% if user.is_authenticated %}
+    <li class="dropdown active">
+        <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Mes Documents</span></a>
+        <ul class="dropdown-menu">
+            {% for doc in user_documents %}
+                <li {% if doc.title == document.title %} class="active" {% endif %} >
+                    <a class="nav-link" href="{% url 'view_document' id=doc.id %}">
+                        <i class="material-icons">insert_drive_file</i><span>{{ doc.title }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </li>
+    
+    {% endif %}
+{% endblock %}
+
+{% block template %}
+    <h1>{{ document.title }}</h1>
+    {{ document.media }}
+{% endblock %}
+
+{% block script %}
+<script>
+
+</script>
+{% endblock %}

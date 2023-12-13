@@ -31,7 +31,13 @@
                                 <h4>Login</h4>
                             </div>
                             <div class="card-body">
-                                <form method="POST" action="#" class="needs-validation" novalidate="">
+                                <form method="POST" action="{% url 'login-post' %}" class="needs-validation" novalidate="">
+                                    {% csrf_token %}
+                                    {% if ERROR %}
+                                        <div class="alert alert-danger">
+                                            {{ ERROR_MESSAGE }}
+                                        </div>
+                                    {% endif %}
                                     <div class="form-group">
                                         <label for="matricule">Matricule</label>
                                         <input id="matricule" type="text" class="form-control" name="matricule"

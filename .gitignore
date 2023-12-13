@@ -1,3 +1,4 @@
 /gestion_soutenances/__pycache__
 /soutenance/__pycache__
 db.sqlite3
+/soutenance/migrations
