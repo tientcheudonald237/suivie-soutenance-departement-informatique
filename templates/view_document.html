@@ -2,6 +2,17 @@
 
 {% block title %} Gestion de projet {% endblock %}
 
+{% block style %}
+    <style>
+        .django-ckeditor-widget{
+            width: 100%;
+        }
+        form p{
+            display: none;
+        }
+    </style>
+{% endblock %}
+
 {% block sidebar %}
     <li class="menu-header">REPERTOIRE</li>
     {% if user.is_authenticated %}
@@ -9,10 +20,13 @@
         <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Mes Documents</span></a>
         <ul class="dropdown-menu">
             {% for doc in user_documents %}
-                <li {% if doc.title == document.title %} class="active" {% endif %} >
+                <li {% if doc.id == document.id %} class="active" {% endif %} >
                     <a class="nav-link" href="{% url 'view_document' id=doc.id %}">
-                        <i class="material-icons">insert_drive_file</i><span>{{ doc.title }}</span>
-                    </a>
+                        <i class="material-icons">insert_drive_file</i>
+                        <span>{{ doc.title }}</span>
+                        <i class="fas fa-trash text-danger delete-icon" data-document-id="{{ doc.id }}"></i>
+                        <i class="fas fa-paint-brush text-success rename-icon" data-document-id="{{ doc.id }}"></i>
+                    </a>                    
                 </li>
             {% endfor %}
         </ul>
@@ -22,15 +36,20 @@
 {% endblock %}
 
 {% block template %}
-   <form action="">
-    {{ myform.media }}
-    {{ myform.as_p }}
-    <input type="submit"/>
-   </form>
+   <form method="post" action="{% url 'view_document' id=document.id %}">
+        {% csrf_token %}    
+        {{ documentForm.media }}
+        {{ documentForm.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Enregistrer</button>
+    </form>
 {% endblock %}
 
 {% block script %}
 <script>
-
+    // Fonction pour la suppression
+    function deleteDocument(documentId) {
+       alert("ok ok");
+    }
 </script>
+
 {% endblock %}

@@ -112,12 +112,12 @@ class GroupeEnseignant(models.Model):
     id_enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
 
 class Document(models.Model):
-    user=models.OneToOneField(CustomUser,models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     title = models.CharField(max_length=300)
     datePosted = models.CharField(max_length=20, default="")
     timePosted = models.CharField(max_length=20, default="")
-    category = models.CharField(max_length=300)
-    content=RichTextField(blank=True, null=True)
+    category = models.CharField(max_length=300, default="rha")
+    content = RichTextField(blank=True, null=True)
     """id_enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
     visibilite = models.CharField(max_length=20, choices=[('tous_le_monde', 'Tous le monde'),
                                                           ('enseignants_session', 'Enseignants de la session'),
