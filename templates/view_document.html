@@ -1,55 +1,292 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block title %} Gestion de projet {% endblock %}
 
 {% block style %}
-    <style>
-        .django-ckeditor-widget{
-            width: 100%;
-        }
-        form p{
-            display: none;
-        }
-    </style>
+<style>
+    .django-ckeditor-widget {
+        width: 100%;
+    }
+    form p {
+        display: none;
+    }
+</style>
 {% endblock %}
 
 {% block sidebar %}
-    <li class="menu-header">REPERTOIRE</li>
-    {% if user.is_authenticated %}
-    <li class="dropdown active">
-        <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Mes Documents</span></a>
-        <ul class="dropdown-menu">
-            {% for doc in user_documents %}
-                <li {% if doc.id == document.id %} class="active" {% endif %} >
-                    <a class="nav-link" href="{% url 'view_document' id=doc.id %}">
-                        <i class="material-icons">insert_drive_file</i>
-                        <span>{{ doc.title }}</span>
-                        <i class="fas fa-trash text-danger delete-icon" data-document-id="{{ doc.id }}"></i>
-                        <i class="fas fa-paint-brush text-success rename-icon" data-document-id="{{ doc.id }}"></i>
-                    </a>                    
-                </li>
-            {% endfor %}
-        </ul>
-    </li>
-    
+{% if user.is_authenticated and not read_only_mode %}
+<li class="menu-header">REPERTOIRE</li>
+<li class="dropdown {% if active_tab == 'my_documents' %}active{% endif %}">
+    <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Mes Documents</span></a>
+    <ul class="dropdown-menu">
+        {% for doc in user_documents %}
+            <li {% if doc.id == document.id %} class="active" {% endif %}>
+                <a class="nav-link" href="{% url 'view_document' id=doc.id %}">
+                    <i class="material-icons">insert_drive_file</i>
+                    <span>{{ doc.title }}</span>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</li>
+<li class="dropdown {% if active_tab == 'shared_documents' %}active{% endif %}">
+    <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Documents partager</span></a>
+    <ul class="dropdown-menu">
+        {% for doc in shared_documents %}
+            <li {% if doc.id == document.id %} class="active" {% endif %}>
+                <a class="nav-link" href="{% url 'view_document' id=doc.id %}">
+                    <i class="material-icons">insert_drive_file</i>
+                    <span>{{ doc.title }}</span>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</li>
+<li class="menu-header">NOTIFICATION</li>
+<li><a class="nav-link" href="{% url 'notification' %}"><i data-feather="map-pin"></i><span>Notifications</span></a></li>
+{% endif %}
+{% endblock %}
+
+{% block navbars %}
+    {% if active_tab == 'my_documents' %}
+        <li>
+            <a href="#" class="nav-link" title="Partager le document" style="color: black;"
+                data-toggle="modal" data-target="#sharedUser">
+                <i class="material-icons">people</i>
+            </a>
+        </li>
     {% endif %}
 {% endblock %}
 
 {% block template %}
-   <form method="post" action="{% url 'view_document' id=document.id %}">
-        {% csrf_token %}    
-        {{ documentForm.media }}
-        {{ documentForm.as_p }}
-        <button type="submit" class="btn btn-primary btn-block">Enregistrer</button>
-    </form>
+{% if not read_only_mode %}
+{% if active_tab == 'my_documents' %}
+    <div class="row p-t-10">
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card card-primary">
+                <div class="card-header d-flex justify-content-between">
+                    <h4>{{ document.title }}</h4>
+                    <h3>
+                        <a class="btn" href="#" data-toggle="modal" data-target="#renameDocument">
+                            <i class="fas fa-paint-brush text-success rename-icon"></i>
+                        </a>
+                        <a class="btn" href="#" onclick="delete_document('{{ document.id }}');">
+                            <i class="fas fa-trash text-danger delete-icon" data-document-id="{{ document.id }}"></i>
+                        </a>
+                    </h3>
+                </div>
+                <!-- <div class="card-body">
+                    <p>Card <code>.card-primary</code></p>
+                </div> -->
+            </div>
+        </div>
+    </div>
+{% endif %}
+<form method="post" action="{% url 'view_document' id=document.id %}">
+    {% csrf_token %}
+    {{ documentForm.media }}
+    {{ documentForm.as_p }}
+    <input type="hidden" id="id_document" value="{{ document.id }}">
+    <!-- <button type="submit" class="btn btn-primary btn-block">Enregistrer</button> -->
+</form>
+{% else %}
+<div class="row">
+    <div class="col-12 col-md-12 col-lg-12">
+        <div class="card card-danger">
+            <div class="card-header d-flex justify-content-between">
+                <h4 class="card-title">{{ document.title }}</h4>
+                <span class="card-title text-info text-title"><span class="">{{ document.user.matricule }}</span> {{ document.user.prenom }} {{ document.user.nom }}</span>
+            </div>
+            <div class="card-body">
+                {{ document.content | safe }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block modal %}
+<div class="modal fade bd-example-modal-lg" id="sharedUser" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myLargeModalLabel">Ajouter un Collaborateur</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-6">
+                        <form method="POST" action="{% url 'add_colaborateur' id=document.id %}" class="">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label>Matricule</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Entrer son matricule"
+                                        name="matricule">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-block waves-effect">Ajouter</button>
+                        </form>
+                        <div>
+                            <h6 class="pt-2">Lien en mode lecture : <span class="text-info">{{ domaine_name }}</span>
+                            </h6>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div>
+                            <h5 class="text-success">Collaborateurs</h5>
+                            <ul class="list-group">
+                                {% for user in shared_users_accepted  %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ user.matricule }}
+                                        <button class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 class="text-warning">En attente de validation</h5>
+                            <ul class="list-group">
+                                {% for user in shared_users_not_accepted  %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ user.matricule }}
+                                        <button class="badge badge-danger badge-pill" onclick="delete_shared_user('{{ user.id }}-{{ document.id }}');"><i class="fas fa-trash"></i></button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="renameDocument" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Renommer un Document</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'rename_document' id=document.id %}" id="rename_document_form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Nom du document</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Nom du document"
+                                value="{{ document.title }}" name="document_name" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-block waves-effect">Renommer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block script %}
-<script>
-    // Fonction pour la suppression
-    function deleteDocument(documentId) {
-       alert("ok ok");
+<script type="text/javascript">
+    function delete_document(id) {
+        swal({
+            title: 'Suppression',
+            text: 'Voulez vous vraiment supprimer ce document ??',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                var xhr = new XMLHttpRequest();
+                var url = "/delete_document/" + id + "/";
+                xhr.open('DELETE', url);
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        console.log(xhr.status)
+                        swal('Suppression réussie', {
+                            icon: 'success',
+                        });
+                        window.location.href = '/';
+                    } else {
+                        swal('Une erreur s\'est produite', {
+                            icon: 'error',
+                        });
+                    }
+                };
+                xhr.send();
+            }
+        });
     }
-</script>
 
+    function delete_shared_user(ids){
+        swal({
+            title: 'Suppression',
+            text: 'Voulez vous vraiment supprimer cet colaborateur ??',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                var xhr = new XMLHttpRequest();
+                var url = "/delete_colaborateur/" + ids + "/";
+                xhr.open('DELETE', url);
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        console.log(xhr.status)
+                        swal('Suppression réussie', {
+                            icon: 'success',
+                        });
+                        window.location.reload();    
+                    } else {
+                        swal('Une erreur s\'est produite', {
+                            icon: 'error',
+                        });
+                    }
+                };
+                xhr.send();
+            }
+        });
+    }
+
+</script>
+<script type="text/javascript">
+
+    setInterval(auto_save, 2000);
+
+    function auto_save() {        
+        var documentId = document.getElementById('id_document').value;
+        
+        var ckeditorInstance = CKEDITOR.instances.id_content;
+        
+        if (ckeditorInstance) {
+            var content = ckeditorInstance.getData();
+            console.log("Content before sending:", content);
+    
+            var xhr = new XMLHttpRequest();
+            var url = "/auto_save/" + documentId + "/";
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+            var data = 'content=' + encodeURIComponent(content);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Document saved successfully.');
+                } else {
+                    console.error('Erreur lors de l\'enregistrement du document :', xhr.statusText);
+                }
+            };
+            xhr.send(data);
+        }
+    }
+        
+
+</script>
 {% endblock %}

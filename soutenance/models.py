@@ -112,12 +112,21 @@ class GroupeEnseignant(models.Model):
     id_enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
 
 class Document(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='documents_created')
     title = models.CharField(max_length=300)
-    datePosted = models.CharField(max_length=20, default="")
-    timePosted = models.CharField(max_length=20, default="")
-    category = models.CharField(max_length=300, default="rha")
+    datePosted = models.DateField(auto_now_add=True)
+    timePosted = models.TimeField(auto_now_add=True)
+    dateLastUpdated = models.DateField(auto_now=True)
+    timeLastUpdated = models.TimeField(auto_now=True)
     content = RichTextField(blank=True, null=True)
+    shared = models.ManyToManyField(CustomUser, through='DocumentSharing', through_fields=('document', 'user'))
+    type = models.CharField(max_length=10, choices=[('word', 'Word'), ('excel', 'Excel')], default='word')
+
+class DocumentSharing(models.Model):
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
+
     """id_enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
     visibilite = models.CharField(max_length=20, choices=[('tous_le_monde', 'Tous le monde'),
                                                           ('enseignants_session', 'Enseignants de la session'),
@@ -138,6 +147,7 @@ class Planning(models.Model):
     id_session = models.ForeignKey(Session, on_delete=models.CASCADE)
     position = models.IntegerField()
     tache = models.CharField(max_length=255)
+    erreur = models.CharField(max_length=255)
     periode = models.CharField(max_length=255)
     description = models.TextField()
 
