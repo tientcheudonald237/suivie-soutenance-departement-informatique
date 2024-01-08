@@ -5,9 +5,12 @@ from .models import Document, CustomUser, DocumentSharing
 from .forms import DocumentForm
 from django.urls import reverse
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
 """ Page """
 
+@csrf_exempt
 def index(request):
     if request.user.is_authenticated:
         user_documents = Document.objects.filter(user=request.user)
@@ -20,6 +23,7 @@ def index(request):
     else:
         return render(request, 'index.html')
 
+@csrf_exempt
 def notification(request):
     context = {}
     
@@ -35,13 +39,14 @@ def notification(request):
     
     return render(request, 'notification.html', context)
 
-
 """ Connexion """
 
+@csrf_exempt
 def login_view(request):
     print(request.user.id)
     return render(request, 'authentification/login.html')
 
+@csrf_exempt
 def login_post(request):
     if request.method == 'POST':
         matricule = request.POST.get('matricule')
@@ -61,13 +66,14 @@ def login_post(request):
     
     return render(request, 'authentification/login.html', context)
 
+@csrf_exempt
 def logout_view(request):
     logout(request)
     return redirect('login')  
 
 
 """ Gestion Document """
-
+@csrf_exempt
 def create_document(request):
     if request.method == 'POST':
         document_name = request.POST.get('document_name')
@@ -88,6 +94,7 @@ def create_document(request):
         
     return redirect('index')
 
+@csrf_exempt
 def view_document(request,id):
     document = get_object_or_404(Document, id=id)  
     user_documents = Document.objects.filter(user=request.user)
@@ -124,7 +131,8 @@ def view_document(request,id):
         'active_tab': active_tab,
     }
     return render(request, 'view_document.html', context)
-        
+
+@csrf_exempt   
 def delete_document(request, id):
     try:
         document = Document.objects.get(id=id)
@@ -135,6 +143,7 @@ def delete_document(request, id):
     except Exception as e:
         return JsonResponse({'message': str(e)}, status=500)
     
+@csrf_exempt
 def rename_document(request, id):
     document = get_object_or_404(Document, id=id)
 
@@ -148,6 +157,7 @@ def rename_document(request, id):
     
     return redirect('view_document', id=id)
 
+@csrf_exempt
 def auto_save(request, id):
     document = get_object_or_404(Document, id=id)
     content = request.POST.get('content')
@@ -159,11 +169,10 @@ def auto_save(request, id):
 
     
 """ ajout utilisateur dans un document  """
-
+@csrf_exempt
 def add_colaborateur(request, id):
     document = get_object_or_404(Document, id=id)
     
-
     if request.method == 'POST':
         matricule = request.POST.get('matricule')
 
@@ -182,6 +191,7 @@ def add_colaborateur(request, id):
             
     return redirect('view_document', id=id)
 
+@csrf_exempt
 def delete_colaborateur(request, ids):
     try:
         user_id, document_id = ids.split('-')
@@ -198,6 +208,7 @@ def delete_colaborateur(request, ids):
     except Exception as e:
         return JsonResponse({'message': str(e)}, status=500)
 
+@csrf_exempt
 def validate_shared_user(request, user_id, document_id):
     document_sharing = get_object_or_404(DocumentSharing, user_id=user_id, document_id=document_id)
     document_sharing.accepted = True
@@ -209,3 +220,9 @@ def validate_shared_user(request, user_id, document_id):
 
 def errors_404():
     pass
+
+""" Folder CRUD"""
+
+def create_folder(request):
+    if request.method == 'POST':
+        pass

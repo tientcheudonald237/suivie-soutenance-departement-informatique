@@ -111,6 +111,10 @@ class GroupeEnseignant(models.Model):
     id_groupe = models.ForeignKey(Groupe, on_delete=models.CASCADE)
     id_enseignant = models.ForeignKey(Enseignant, on_delete=models.CASCADE)
 
+class Folder(models.Model):
+    name = models.CharField(max_length=255)
+    parent_folder = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+
 class Document(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='documents_created')
     title = models.CharField(max_length=300)
@@ -121,7 +125,8 @@ class Document(models.Model):
     content = RichTextField(blank=True, null=True)
     shared = models.ManyToManyField(CustomUser, through='DocumentSharing', through_fields=('document', 'user'))
     type = models.CharField(max_length=10, choices=[('word', 'Word'), ('excel', 'Excel')], default='word')
-
+    folder = models.ForeignKey(Folder, on_delete=models.SET_NULL, null=True, blank=True)
+    
 class DocumentSharing(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
