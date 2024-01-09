@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-5u)7gt8f8c+-2mb^)ow9xzkp39eusfi3qg6i3umte84h_$r=@#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    # 'cbfa-41-202-207-15.ngrok-free.app',
+]
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
 # Application definition
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'soutenance',
+    'ckeditor'
 ]
 
 MIDDLEWARE = [
@@ -119,6 +122,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 MEDIA_URL = 'images/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+AUTH_USER_MODEL='soutenance.CustomUser'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR / 'images'
 
@@ -126,3 +130,10 @@ MEDIA_ROOT = BASE_DIR / 'images'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'height': 700,
+        'toolbar': 'full',
+    }
+}

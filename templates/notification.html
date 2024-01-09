@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %} Gestion de projet {% endblock %}
+
+{% block sidebar %}
+{% if user.is_authenticated %}
+<li class="menu-header">REPERTOIRE</li>
+<li class="dropdown">
+    <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Mes Documents</span></a>
+    <ul class="dropdown-menu">
+        {% for document in user_documents %}
+        <li><a class="nav-link" href="{% url 'view_document' id=document.id %}"><i
+                    class="material-icons">insert_drive_file</i><span>{{ document.title }}</span></a></li>
+        {% endfor %}
+    </ul>
+</li>
+<li class="menu-header">NOTIFICATION</li>
+<li class="active">
+    <a class="nav-link active" href="{% url 'notification' %}">
+        <i class="far fa-bell"></i><span>Notifications</span>
+    </a>
+</li>
+{% else %}
+<h1>Welcome, Guest!</h1>
+<p>Please log in to access your documents.</p>
+{% endif %}
+
+{% endblock %}
+
+{% block template %}
+<div class="row">
+    {% for notif in documents_not_accepted %}
+    <div class="col-12 col-md-6 col-lg-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h4>{{ notif.title }}</h4>
+                <div class="card-header-action">
+                    {% if 1 %}
+                        {% with url=user.id|stringformat:'s'|add:'-'|add:notif.id|stringformat:'s' %}
+                            <a href="{% url 'validate_shared_user' user_id=user.id document_id=notif.id %}" class="btn btn-success">Ouvrir</a>
+                        {% endwith %}                
+                    {% endif %}
+                    <button  onclick="delete_shared_user('{{ user.id }}-{{ notif.id }}')" class="btn btn-danger">Refuser</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5>{{ notif.user.matricule }} vous a partager le document <span class="text-info">{{ notif.title }}</span>.</h5>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    function delete_shared_user(ids){
+        swal({
+            title: 'Suppression',
+            text: 'Voulez vous vraiment supprimer cet colaborateur ??',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                var xhr = new XMLHttpRequest();
+                var url = "/delete_colaborateur/" + ids + "/";
+                xhr.open('DELETE', url);
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        console.log(xhr.status)
+                        swal('Suppression réussie', {
+                            icon: 'success',
+                        });
+                        window.location.reload();    
+                    } else {
+                        swal('Une erreur s\'est produite', {
+                            icon: 'error',
+                        });
+                    }
+                };
+                xhr.send();
+            }
+        });
+    }
+
+</script>
+{% endblock %}
