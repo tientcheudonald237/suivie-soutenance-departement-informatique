@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} Gestion de projet - Dossier {% endblock %}
+{% block style %}
+<style>
+    .banner-img img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}
+<!-- 
+{% block navbars %}
+    {% if active_tab == 'my_documents' %}
+        <li>
+            <a href="#" class="nav-link" title="Partager le document" style="color: black;"
+                data-toggle="modal" data-target="#sharedUser">
+                <i class="material-icons">people</i>
+            </a>
+        </li>
+    {% endif %}
+{% endblock %} -->
+
+{% block template %}
+<div class="row">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
+        <div class="card" style="position: relative;">
+            <div class="card-statistic-4">
+                <div class="align-items-center justify-content-between">
+                    <div class="row">
+                        <a class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0" data-toggle="modal" data-target="#addDocument">
+                            <div class="banner-img">
+                                <img src="/static/assets/img/plus.png" alt="">
+                            </div>
+                        </a>
+                        <!-- <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                            <a class="banner-img"  style="width: 80px;">
+                                <img src="/static/assets/img/dossier-plus.png" alt="">
+                            </a>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% for subfolder in  subfolders %}
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <div class="card" style="position: relative;">
+                <div class="card-statistic-4">
+                    <div class="align-items-center justify-content-between">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                                <div class="banner-img">
+                                    <img src="/static/assets/img/dossier2.png" alt="">
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                                <div class="card-content">
+                                    <br/>
+                                    <a href="#" class="mt-5">{{ subfolder.name }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown dropright" style="position: absolute;top: 10px;right: 16px;">
+                    <a class="dropdown-toggle btn" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </a>
+                    <div class="dropdown-menu dropright" aria-labelledby="dropdownMenuButton">
+                        <!-- <a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Ajouter aux favoris</a> -->
+                        <a class="dropdown-item" href="#"><i class="fas fa-edit"></i> Renommer</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"><i class="fas fa-trash-alt"></i> Supprimer</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-user-plus"></i> Ajouter un Collaborateur</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    {% for docment in  documents %}
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <div class="card" style="position: relative;">
+                <div class="card-statistic-4">
+                    <div class="align-items-center justify-content-between">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                                <div class="banner-img">
+                                    <img src="/static/assets/img/word.png" alt="">
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                                <div class="card-content">
+                                    <br/>
+                                    <a href="{% url 'view_document' uid=docment.uid %}" class="mt-5">{{ docment.title }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown dropright" style="position: absolute;top: 10px;right: 16px;">
+                    <a class="dropdown-toggle btn" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </a>
+                    <div class="dropdown-menu dropright" aria-labelledby="dropdownMenuButton">
+                        <!-- <a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Ajouter aux favoris</a> -->
+                        <a class="dropdown-item" href="#"><i class="fas fa-edit"></i> Renommer</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"><i class="fas fa-trash-alt"></i> Supprimer</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-user-plus"></i> Ajouter un Collaborateur</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block modal %}
+<div class="modal fade bd-example-modal-lg" id="sharedUser" tabindex="-1" role="dialog"
+    aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myLargeModalLabel">Ajouter un Collaborateur</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-6">
+                        <form method="POST" action="{% url 'add_colaborateur' id=folder.id %}" class="">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label>Matricule</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Entrer son matricule"
+                                        name="matricule">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-block waves-effect">Ajouter</button>
+                        </form>
+                        <div>
+                            <h6 class="pt-2">Lien en mode lecture : <span class="text-info">{{ domaine_name }}</span>
+                            </h6>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div>
+                            <h5 class="text-success">Collaborateurs</h5>
+                            <ul class="list-group">
+                                {% for user in shared_users_accepted %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ user.matricule }}
+                                    <button class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 class="text-warning">En attente de validation</h5>
+                            <ul class="list-group">
+                                {% for user in shared_users_not_accepted %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ user.matricule }}
+                                    <button class="badge badge-danger badge-pill"
+                                        onclick="delete_shared_user('{{ user.id }}-{{ document.id }}');"><i
+                                            class="fas fa-trash"></i></button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="renameDocument" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Renommer un Document</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'rename_document' id=folder.id %}" id="rename_document_form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Nom du document</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Nom du document"
+                                value="{{ document.title }}" name="document_name" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-block waves-effect">Renommer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    function delete_document(id) {
+        swal({
+            title: 'Suppression',
+            text: 'Voulez vous vraiment supprimer ce document ??',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                var xhr = new XMLHttpRequest();
+                var url = "/delete_document/" + id + "/";
+                xhr.open('DELETE', url);
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        console.log(xhr.status)
+                        swal('Suppression réussie', {
+                            icon: 'success',
+                        });
+                        window.location.href = '/';
+                    } else {
+                        swal('Une erreur s\'est produite', {
+                            icon: 'error',
+                        });
+                    }
+                };
+                xhr.send();
+            }
+        });
+    }
+
+    function delete_shared_user(ids) {
+        swal({
+            title: 'Suppression',
+            text: 'Voulez vous vraiment supprimer cet colaborateur ??',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                var xhr = new XMLHttpRequest();
+                var url = "/delete_colaborateur/" + ids + "/";
+                xhr.open('DELETE', url);
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        console.log(xhr.status)
+                        swal('Suppression réussie', {
+                            icon: 'success',
+                        });
+                        window.location.reload();
+                    } else {
+                        swal('Une erreur s\'est produite', {
+                            icon: 'error',
+                        });
+                    }
+                };
+                xhr.send();
+            }
+        });
+    }
+
+</script>
+{% endblock %}

@@ -13,40 +13,6 @@
 </style>
 {% endblock %}
 
-{% block sidebar %}
-{% if user.is_authenticated and not read_only_mode %}
-<li class="menu-header">REPERTOIRE</li>
-<li class="dropdown {% if active_tab == 'my_documents' %}active{% endif %}">
-    <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Mes Documents</span></a>
-    <ul class="dropdown-menu">
-        {% for doc in user_documents %}
-            <li {% if doc.id == document.id %} class="active" {% endif %}>
-                <a class="nav-link" href="{% url 'view_document' id=doc.id %}">
-                    <i class="material-icons">insert_drive_file</i>
-                    <span>{{ doc.title }}</span>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-</li>
-<li class="dropdown {% if active_tab == 'shared_documents' %}active{% endif %}">
-    <a href="#" class="menu-toggle nav-link has-dropdown"><i class="fas fa-folder"></i><span>Documents partager</span></a>
-    <ul class="dropdown-menu">
-        {% for doc in shared_documents %}
-            <li {% if doc.id == document.id %} class="active" {% endif %}>
-                <a class="nav-link" href="{% url 'view_document' id=doc.id %}">
-                    <i class="material-icons">insert_drive_file</i>
-                    <span>{{ doc.title }}</span>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-</li>
-<li class="menu-header">NOTIFICATION</li>
-<li><a class="nav-link" href="{% url 'notification' %}"><i data-feather="map-pin"></i><span>Notifications</span></a></li>
-{% endif %}
-{% endblock %}
-
 {% block navbars %}
     {% if active_tab == 'my_documents' %}
         <li>
@@ -82,10 +48,10 @@
         </div>
     </div>
 {% endif %}
-<form method="post" action="{% url 'view_document' id=document.id %}">
+<form method="post" action="{% url 'view_document' uid=document.uid %}">
     {% csrf_token %}
-    {{ documentForm.media }}
     {{ documentForm.as_p }}
+    {{ documentForm.media }}
     <input type="hidden" id="id_document" value="{{ document.id }}">
     <!-- <button type="submit" class="btn btn-primary btn-block">Enregistrer</button> -->
 </form>
@@ -193,6 +159,8 @@
 {% endblock %}
 
 {% block script %}
+<script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
+
 <script type="text/javascript">
     function delete_document(id) {
         swal({
@@ -259,12 +227,12 @@
 </script>
 <script type="text/javascript">
 
-    setInterval(auto_save, 2000);
+    setInterval(auto_save, 3000);
 
-    function auto_save() {        
+    function auto_save() {       
+        var ckeditorInstance = CKEDITOR.instances.id_content;
         var documentId = document.getElementById('id_document').value;
         
-        var ckeditorInstance = CKEDITOR.instances.id_content;
         
         if (ckeditorInstance) {
             var content = ckeditorInstance.getData();
@@ -284,7 +252,58 @@
                 }
             };
             xhr.send(data);
+        }else{
+            console.error('ckeditorInstance is undefined 1');
         }
     }
+</script>
+<script type="text/javascript">
+
+    const socket = new WebSocket('ws://'+window.location.host+'/ws/livec/public_room/'); 
+    
+    
+    CKEDITOR.replace('id_content', {
+        on: {
+            change: function () {
+                const content = this.getData();
+                socket.send(JSON.stringify({
+                    'expression': content
+                }));
+            }
+        }
+    });
+
+    let lastReceivedResult = null;
+
+    socket.onmessage = function (e) {
+        const result = JSON.parse(e.data).result;
+        var ckeditorInstance = CKEDITOR.instances.id_content;
+
+        if (ckeditorInstance) {
+            if (result !== lastReceivedResult) {
+
+               // var selection = ckeditorInstance.getSelection();
+               // var selected_ranges = selection.getRanges();
+                
+
+                ckeditorInstance.document.getBody().setHtml(result);
+                //ckeditorInstance.setData(result);
+                lastReceivedResult = result;
+
+               
+                var editorRange = ckeditorInstance.createRange();
+                editorRange.moveToElementEditEnd(ckeditorInstance.editable());
+                editorRange.select();
+
+                console.log(result);
+            } else {
+                console.log('Message redondant, non traité.');
+            }
+        } else {
+            console.error('ckeditorInstance is undefined');
+        }
+    };
+
+
 </script>
 {% endblock %}

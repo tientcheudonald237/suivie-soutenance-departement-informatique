@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'soutenance',
-    'ckeditor'
+    'ckeditor',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -72,6 +73,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'gestion_soutenaces.wsgi.application'
+ASGI_APPLICATION = 'gestion_soutenaces.asgi.application'
 
 
 # Database
@@ -131,9 +133,17 @@ MEDIA_ROOT = BASE_DIR / 'images'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
 CKEDITOR_CONFIGS = {
     'default': {
         'height': 700,
         'toolbar': 'full',
     }
 }
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer",
+    }
+}
+

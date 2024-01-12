@@ -43,7 +43,6 @@
     {% block style %}{% endblock %}
 
 </head>
-
 <body>
     <div class="loader"></div>
     <div id="app">
@@ -65,12 +64,12 @@
                     </ul>
                 </div>
                 <ul class="navbar-nav navbar-right">
-                    <li>
+                    <!-- <li>
                         <a href="#" class="nav-link" title="ajouter un document" style="color: black;"
-                            data-toggle="modal" data-target="#addModal">
+                            data-toggle="modal" data-target="#addDocument">
                             <i class="material-icons">add_circle</i>
                         </a>
-                    </li>
+                    </li> -->
                     {% block navbars %}{% endblock %}
                     <li class="dropdown"><a href="#" data-toggle="dropdown"
                             class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image"
@@ -100,8 +99,64 @@
                                 class="header-logo" /> <span class="logo-name">Otika</span></a>
                     </div>
                     <ul class="sidebar-menu">
-                        {% block sidebar %}
-                        {% endblock %}
+                        {% if user.is_authenticated %}
+                        <li class="menu-header">NOUVEAU</li>
+                        <li {% if request.path == '#'%} class="active" {% endif %}><a class="nav-link" href="#" data-toggle="modal" data-target="#addFolder"><i data-feather="folder-plus"></i><span>Dossier</span></a></li>
+                        <li {% if request.path == '#'%} class="active" {% endif %}><a class="nav-link" href="#" data-toggle="modal" data-target="#addDocument"><i data-feather="file-plus"></i><span>Document</span></a></li>    
+                        <li class="menu-header">REPERTOIRE</li>
+                        <li {% if request.path == "/" %} class="active" {% endif %}><a class="nav-link" href="{% url 'index' %}"><i data-feather="home"></i><span>Accueil</span></a></li>
+                        <li class="dropdown {% if active_tab == 'my_documents' or active_tab == 'my_folders' %}active{% endif %}">
+                            <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="monitor"></i><span>Mes Documents</span></a>
+                            <ul class="dropdown-menu">
+                                {% for fold in user_folders %}
+                                    <li {% if fold.id == folder.id %} class="active" {% endif %}>
+                                        <a class="nav-link" href="{% url 'view_folder' uid=fold.uid %}">
+                                            <i class="fas fa-folder"></i>
+                                            <span>{{ fold.name|slice:":16" }}{% if fold.name|length > 16 %}...{% endif %}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                                {% for doc in user_documents %}
+                                    <li {% if doc.id == document.id %} class="active" {% endif %}>
+                                        <a class="nav-link" href="{% url 'view_document' uid=doc.uid %}">
+                                            <i class="material-icons">insert_drive_file</i>
+                                            <span>{{ doc.title|slice:":16" }}{% if doc.title|length > 16 %}...{% endif %}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        
+                        <li class="dropdown {% if active_tab == 'shared_folders' or active_tab == 'shared_documents' %}active{% endif %}">
+                            <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="users"></i><span>Partagés</span></a>
+                            <ul class="dropdown-menu">
+                                {% for fold in shared_folders %}
+                                    <li {% if fold.id == folder.id %} class="active" {% endif %}>
+                                        <a class="nav-link" href="{% url 'view_folder' uid=fold.uid %}">
+                                            <i class="fas fa-folder"></i>
+                                            <span>{{ fold.name|slice:":16" }}{% if fold.name|length > 16 %}...{% endif %}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                                {% for doc in shared_documents %}
+                                    <li {% if doc.id == document.id %} class="active" {% endif %}>
+                                        <a class="nav-link" href="{% url 'view_document' uid=doc.uid %}">
+                                            <i class="material-icons">insert_drive_file</i>
+                                            <span>{{ doc.title|slice:":16" }}{% if doc.title|length > 16 %}...{% endif %}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        <li {% if request.path == "favoris" %} class="active" {% endif %}><a class="nav-link" href="{% url 'notification' %}"><i data-feather="star"></i><span>Favoris</span></a></li>
+                        <li class="menu-header">NOTIFICATION</li>
+                        <li {% if request.path == "/notification" %} class="active" {% endif %}><a class="nav-link" href="{% url 'notification' %}"><i data-feather="bell"></i><span>Notifications</span></a></li>
+                        
+                        {% else %}
+                            <h1 class="text-center text-warning">Bienvenue, Invité !</h1>
+                            <h5 class="text-center">Veuillez vous connecter pour accéder à vos documents.</h5>
+                            <h6 class="text-center"><a href="{% url 'login' %}" class="btn btn-success">Connecté Vous</a></h6>
+                        {% endif %}
                     </ul>
                 </aside>
             </div>
@@ -139,7 +194,7 @@
         </div>
     </div>
     <!-- Modal de creation d'un document -->
-    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+    <div class="modal fade" id="addDocument" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -158,6 +213,9 @@
                                     name="document_name" required>
                             </div>
                         </div>
+                        {% if folder %}
+                            <input type="hidden" name="parent_folder" value="{{ folder.id }}">
+                        {% endif %}
                         <div class="form-group">
                             <label>Type</label>
                             <div class="input-group">
@@ -165,6 +223,32 @@
                                     <option value="word">Word</option>
                                     <!-- <option value="excel">Excel</option> -->
                                 </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block waves-effect">Creer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de creation d'un dossier -->
+    <div class="modal fade" id="addFolder" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Creer un Dossier</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'create_folder' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Nom du dossier</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Nom du dossier"
+                                    name="folder_name" required>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary btn-block waves-effect">Creer</button>
