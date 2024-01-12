@@ -50,8 +50,8 @@
 {% endif %}
 <form method="post" action="{% url 'view_document' uid=document.uid %}">
     {% csrf_token %}
-    {{ documentForm.media }}
     {{ documentForm.as_p }}
+    {{ documentForm.media }}
     <input type="hidden" id="id_document" value="{{ document.id }}">
     <!-- <button type="submit" class="btn btn-primary btn-block">Enregistrer</button> -->
 </form>

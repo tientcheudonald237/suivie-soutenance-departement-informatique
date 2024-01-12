@@ -105,28 +105,44 @@
                         <li {% if request.path == '#'%} class="active" {% endif %}><a class="nav-link" href="#" data-toggle="modal" data-target="#addDocument"><i data-feather="file-plus"></i><span>Document</span></a></li>    
                         <li class="menu-header">REPERTOIRE</li>
                         <li {% if request.path == "/" %} class="active" {% endif %}><a class="nav-link" href="{% url 'index' %}"><i data-feather="home"></i><span>Accueil</span></a></li>
-                        <li class="dropdown">
+                        <li class="dropdown {% if active_tab == 'my_documents' or active_tab == 'my_folders' %}active{% endif %}">
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="monitor"></i><span>Mes Documents</span></a>
                             <ul class="dropdown-menu">
-                                {% for folder in user_folders %}
-                                    <li {% if request.path == folder.get_absolute_url %} class="active" {% endif %}>
-                                        <a class="nav-link" href="{% url 'view_folder' uid=folder.uid %}">
+                                {% for fold in user_folders %}
+                                    <li {% if fold.id == folder.id %} class="active" {% endif %}>
+                                        <a class="nav-link" href="{% url 'view_folder' uid=fold.uid %}">
                                             <i class="fas fa-folder"></i>
-                                            <span>{{ folder.name|slice:":16" }}{% if folder.name|length > 16 %}...{% endif %}</span>
+                                            <span>{{ fold.name|slice:":16" }}{% if fold.name|length > 16 %}...{% endif %}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                                {% for doc in user_documents %}
+                                    <li {% if doc.id == document.id %} class="active" {% endif %}>
+                                        <a class="nav-link" href="{% url 'view_document' uid=doc.uid %}">
+                                            <i class="material-icons">insert_drive_file</i>
+                                            <span>{{ doc.title|slice:":16" }}{% if doc.title|length > 16 %}...{% endif %}</span>
                                         </a>
                                     </li>
                                 {% endfor %}
                             </ul>
                         </li>
                         
-                        <li class="dropdown">
+                        <li class="dropdown {% if active_tab == 'shared_folders' or active_tab == 'shared_documents' %}active{% endif %}">
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="users"></i><span>Partagés</span></a>
                             <ul class="dropdown-menu">
-                                {% for folder in shared_folders %}
-                                    <li {% if request.path == folder.get_absolute_url %} class="active" {% endif %}>
-                                        <a class="nav-link" href="{% url 'view_folder' uid=folder.uid %}">
+                                {% for fold in shared_folders %}
+                                    <li {% if fold.id == folder.id %} class="active" {% endif %}>
+                                        <a class="nav-link" href="{% url 'view_folder' uid=fold.uid %}">
                                             <i class="fas fa-folder"></i>
-                                            <span>{{ folder.name|slice:":16" }}{% if folder.name|length > 16 %}...{% endif %}</span>
+                                            <span>{{ fold.name|slice:":16" }}{% if fold.name|length > 16 %}...{% endif %}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                                {% for doc in shared_documents %}
+                                    <li {% if doc.id == document.id %} class="active" {% endif %}>
+                                        <a class="nav-link" href="{% url 'view_document' uid=doc.uid %}">
+                                            <i class="material-icons">insert_drive_file</i>
+                                            <span>{{ doc.title|slice:":16" }}{% if doc.title|length > 16 %}...{% endif %}</span>
                                         </a>
                                     </li>
                                 {% endfor %}
@@ -197,6 +213,9 @@
                                     name="document_name" required>
                             </div>
                         </div>
+                        {% if folder %}
+                            <input type="hidden" name="parent_folder" value="{{ folder.id }}">
+                        {% endif %}
                         <div class="form-group">
                             <label>Type</label>
                             <div class="input-group">

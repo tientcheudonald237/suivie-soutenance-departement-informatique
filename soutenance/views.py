@@ -88,32 +88,35 @@ def create_document(request):
 
         current_user = request.user    
         if document_type == 'word' :
-            document = Document(title=document_name, content="", user=current_user, type=document_type) 
+            document = Document(title=document_name, content="", user=current_user, type=document_type)
+            
             if request.POST.get('parent_folder') :
-                document.folder = request.POST.get('parent_folder')
+                id_folder = int(request.POST.get('parent_folder'))
+                parent_folder = get_object_or_404(Folder, pk=id_folder)
+                document.folder = parent_folder
+                
             document.save()
             messages.success(request, 'Document created successfully.')
-            document_url = reverse('view_document', args=[document.id])
+            document_url = reverse('view_document', args=[document.uid])
             return redirect(document_url)
             
         else : 
             messages.warning(request, 'Erreur Utilisateur non connecté') 
              
-        
     return redirect('index')
 
 @csrf_exempt
 def view_document(request,uid):
     document = get_object_or_404(Document, uid=uid)  
-    user_documents = Document.objects.filter(user=request.user)
+    user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
     documentForm = DocumentForm(initial={'content': document.content})
-    
+ 
     read_only_mode = request.GET.get('read-only', False) == 'true'
     
     domain = request.META['HTTP_HOST']
     domain_name = f'http://{domain}/view_document/{uid}/?read-only=true'
     
-    shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)
+    shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True, folder__isnull=True)
     active_tab = 'my_documents' if document in user_documents else 'shared_documents' if document in shared_documents else None
 
 
@@ -125,7 +128,13 @@ def view_document(request,uid):
     
     shared_users_not_accepted = CustomUser.objects.filter(documentsharing__document_id=document.id, documentsharing__accepted=False)
     shared_users_accepted = CustomUser.objects.filter(documentsharing__document_id=document.id, documentsharing__accepted=True)
-    
+    user_folders = Folder.objects.filter(user=request.user, parent_folder=None)
+    shared_folders = Folder.objects.filter(
+        foldersharing__user=request.user.id,
+        foldersharing__accepted=True,
+        parent_folder__foldersharing__user=request.user.id,
+        parent_folder__foldersharing__accepted=True
+    ).distinct()
     
     context = {
         'document': document,
@@ -137,6 +146,8 @@ def view_document(request,uid):
         'shared_users_accepted' : shared_users_accepted,
         'shared_documents' : shared_documents,
         'active_tab': active_tab,
+        'user_folders': user_folders,
+        'shared_folders': shared_folders,
     }
     return render(request, 'view_document.html', context)
 
@@ -250,7 +261,10 @@ def create_folder(request):
         folder.save()
         
         messages.success(request, 'Folder created successfully.')
-        return redirect('index')
+
+        folder_url = reverse('view_folder', args=[folder.uid])
+        return redirect(folder_url)
+        
        
     return redirect('index')
 
@@ -293,6 +307,10 @@ def view_folder(request, uid):
         parent_folder__foldersharing__user=request.user.id,
         parent_folder__foldersharing__accepted=True
     ).distinct()
+    user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
+    shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True, folder__isnull=True)
+    active_tab = 'my_folders' if folder in user_folders else 'shared_folders' if folder in shared_folders else None
+    
     
     context ={
         "folder" : folder,
@@ -300,6 +318,9 @@ def view_folder(request, uid):
         "documents": documents,
         'shared_folders': shared_folders,
         'user_folders': user_folders,
+        'user_documents': user_documents,
+        'shared_documents': shared_documents,
+        'active_tab': active_tab,
     }
     
     return render(request, 'view_folder.html', context)
