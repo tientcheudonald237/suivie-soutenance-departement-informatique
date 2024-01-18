@@ -8,6 +8,9 @@ from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from itertools import groupby
+from operator import attrgetter
+from .services import get_parents_document, get_parents_folder
 
 """ Page """
 
@@ -21,10 +24,16 @@ def index(request):
             parent_folder__foldersharing__user=request.user.id,
             parent_folder__foldersharing__accepted=True
         ).distinct()
+        
+        user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
+        shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)
+        
 
         context = {
             'shared_folders': shared_folders,
             'user_folders': user_folders,
+            'user_documents': user_documents,
+            'shared_documents': shared_documents,
         }
         return render(request, 'index.html', context)
     else:
@@ -32,19 +41,30 @@ def index(request):
 
 @csrf_exempt
 def notification(request):
-    context = {}
-    
     if request.user.is_authenticated:
-        user_documents = Document.objects.filter(user=request.user)
+        user_folders = Folder.objects.filter(user=request.user, parent_folder=None)
+        shared_folders = Folder.objects.filter(
+            foldersharing__user=request.user.id,
+            foldersharing__accepted=True,
+            parent_folder__foldersharing__user=request.user.id,
+            parent_folder__foldersharing__accepted=True
+        ).distinct()
         
+        user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
+        shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True, folder__isnull=True)
+
         documents_not_accepted = Document.objects.filter(documentsharing__user_id=request.user.id, documentsharing__accepted=False)
 
         context = {
+            'shared_folders': shared_folders,
+            'user_folders': user_folders,
             'user_documents': user_documents,
+            'shared_documents': shared_documents,
             'documents_not_accepted': documents_not_accepted,
         }
-    
-    return render(request, 'notification.html', context)
+        return render(request, 'notification.html', context)
+    else:
+        return render(request, 'notification.html', context)
 
 """ Connexion """
 
@@ -108,6 +128,11 @@ def create_document(request):
 @csrf_exempt
 def view_document(request,uid):
     document = get_object_or_404(Document, uid=uid)  
+    
+    # Vérifier si l'utilisateur a accès au document
+    if not (document.user == request.user or DocumentSharing.objects.filter(user=request.user, document=document, accepted=True).exists()):
+        return render(request,'errors/404.html')
+    
     user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
     documentForm = DocumentForm(initial={'content': document.content})
  
@@ -116,9 +141,12 @@ def view_document(request,uid):
     domain = request.META['HTTP_HOST']
     domain_name = f'http://{domain}/view_document/{uid}/?read-only=true'
     
-    shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True, folder__isnull=True)
-    active_tab = 'my_documents' if document in user_documents else 'shared_documents' if document in shared_documents else None
+    shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)
 
+
+    user_documents_ = Document.objects.filter(user=request.user)
+    shared_documents_ = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)    
+    active_tab = 'my_documents' if document in user_documents_ else 'shared_documents' if document in shared_documents_ else None
 
     if request.method == 'POST':
         edit_form = DocumentForm(request.POST, instance=document)
@@ -135,6 +163,7 @@ def view_document(request,uid):
         parent_folder__foldersharing__user=request.user.id,
         parent_folder__foldersharing__accepted=True
     ).distinct()
+    parent_folders = get_parents_document(document)
     
     context = {
         'document': document,
@@ -148,6 +177,7 @@ def view_document(request,uid):
         'active_tab': active_tab,
         'user_folders': user_folders,
         'shared_folders': shared_folders,
+        'parent_folders': parent_folders,
     }
     return render(request, 'view_document.html', context)
 
@@ -176,7 +206,7 @@ def rename_document(request, id):
     document.title = document_name
     document.save()
     
-    return redirect('view_document', id=id)
+    return redirect('view_document', uid=document.uid)
 
 @csrf_exempt
 @login_required(login_url='login')
@@ -258,6 +288,10 @@ def create_folder(request):
         current_user = request.user
         
         folder = Folder(name=folder_name, user=current_user)
+        if request.POST.get('parent_folder') :
+            id_folder = int(request.POST.get('parent_folder'))
+            parent_folder = get_object_or_404(Folder, pk=id_folder)
+            folder.parent_folder = parent_folder
         folder.save()
         
         messages.success(request, 'Folder created successfully.')
@@ -292,13 +326,20 @@ def rename_folder(request, id):
 
     folder.name = folder_name
     folder.save()
+    return redirect('view_folder', uid=folder.uid)
 
-    return redirect('index')
 
 def view_folder(request, uid):
     folder = get_object_or_404(Folder, uid=uid)
-    subfolders = Folder.objects.filter(parent_folder=folder)
-    documents = Document.objects.filter(folder=folder)
+    subfolders = Folder.objects.filter(parent_folder=folder).order_by('-created_at')
+    documents = Document.objects.filter(folder=folder).order_by('-created_at')
+
+    # Combine subfolders and documents into a single list
+    all_items = list(subfolders) + list(documents)
+    # Sort the combined list by created_at
+    sorted_items = sorted(all_items, key=attrgetter('created_at'), reverse=True)
+    # Group the sorted list by created_at
+    grouped_items = {key: list(group) for key, group in groupby(sorted_items, key=lambda x: x.created_at.date())}
 
     user_folders = Folder.objects.filter(user=request.user, parent_folder=None)
     shared_folders = Folder.objects.filter(
@@ -310,18 +351,20 @@ def view_folder(request, uid):
     user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
     shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True, folder__isnull=True)
     active_tab = 'my_folders' if folder in user_folders else 'shared_folders' if folder in shared_folders else None
-    
+    parent_folders = get_parents_folder(folder)
     
     context ={
         "folder" : folder,
-        "subfolders": subfolders,
-        "documents": documents,
+        "grouped_items": grouped_items,
         'shared_folders': shared_folders,
         'user_folders': user_folders,
         'user_documents': user_documents,
         'shared_documents': shared_documents,
         'active_tab': active_tab,
+        "parent_folders": parent_folders,
     }
     
     return render(request, 'view_folder.html', context)
-    
+
+
+

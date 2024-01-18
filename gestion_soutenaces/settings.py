@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-5u)7gt8f8c+-2mb^)ow9xzkp39eusfi3qg6i3umte84h_$r=@#
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    # 'cbfa-41-202-207-15.ngrok-free.app',
+    # '3b27-154-72-167-13.ngrok-free.app',
 ]
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'fr'
 
 TIME_ZONE = 'UTC'
 

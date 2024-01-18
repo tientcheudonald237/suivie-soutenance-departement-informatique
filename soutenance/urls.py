@@ -18,6 +18,10 @@ urlpatterns = [
     path('logout', views.logout_view, name='logout'),
     path('create_folder', views.create_folder, name='create_folder'),
     path('folders/<uuid:uid>/', views.view_folder, name='view_folder'),
+    path('rename_folder/<int:id>/', views.rename_folder, name='rename_folder'),
+    path('delete_folder/<int:id>/', views.delete_folder, name='delete_folder'),
+    
+    
     
     
 ]
