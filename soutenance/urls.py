@@ -12,16 +12,15 @@ urlpatterns = [
     path('documents/<uuid:uid>/', views.view_document, name='view_document'),
     path('delete_document/<int:id>/', views.delete_document, name='delete_document'),
     path('rename_document/<int:id>/', views.rename_document, name='rename_document'),
-    path('add_colaborateur/<int:id>/', views.add_colaborateur, name='add_colaborateur'),
-    path('delete_colaborateur/<str:ids>/', views.delete_colaborateur, name='delete_colaborateur'),
-    path('validate_shared_user/<int:user_id>-<int:document_id>/', views.validate_shared_user, name='validate_shared_user'),
     path('logout', views.logout_view, name='logout'),
     path('create_folder', views.create_folder, name='create_folder'),
     path('folders/<uuid:uid>/', views.view_folder, name='view_folder'),
     path('rename_folder/<int:id>/', views.rename_folder, name='rename_folder'),
-    path('delete_folder/<int:id>/', views.delete_folder, name='delete_folder'),
-    
-    
-    
-    
+    path('delete_folder/<int:id>/', views.delete_folder, name='delete_folder'),   
+    path('add_colaborateur_document/<int:id>/', views.add_colaborateur_document, name='add_colaborateur_document'),
+    path('delete_colaborateur_document/<str:ids>/', views.delete_colaborateur_document, name='delete_colaborateur_document'),
+    path('validate_shared_document/<int:user_id>-<int:document_id>/', views.validate_shared_document, name='validate_shared_document'),
+    path('add_colaborateur_folder/<int:id>/', views.add_colaborateur_folder, name='add_colaborateur_folder'),
+    path('delete_colaborateur_folder/<str:ids>/', views.delete_colaborateur_folder, name='delete_colaborateur_folder'),
+    path('validate_shared_folder/<int:user_id>-<int:folder_id>/', views.validate_shared_folder, name='validate_shared_folder'),
 ]

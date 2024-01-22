@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from itertools import groupby
 from operator import attrgetter
-from .services import get_parents_document, get_parents_folder
+from .services import get_parents_document, get_parents_folder, has_access_to_folder, has_access_to_document
 
 """ Page """
 
@@ -54,13 +54,14 @@ def notification(request):
         shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True, folder__isnull=True)
 
         documents_not_accepted = Document.objects.filter(documentsharing__user_id=request.user.id, documentsharing__accepted=False)
-
+        folders_not_accepted = Folder.objects.filter(foldersharing__user_id=request.user.id, foldersharing__accepted=False)
         context = {
             'shared_folders': shared_folders,
             'user_folders': user_folders,
             'user_documents': user_documents,
             'shared_documents': shared_documents,
             'documents_not_accepted': documents_not_accepted,
+            'folders_not_accepted': folders_not_accepted,
         }
         return render(request, 'notification.html', context)
     else:
@@ -129,9 +130,12 @@ def create_document(request):
 def view_document(request,uid):
     document = get_object_or_404(Document, uid=uid)  
     
+
     # Vérifier si l'utilisateur a accès au document
-    if not (document.user == request.user or DocumentSharing.objects.filter(user=request.user, document=document, accepted=True).exists()):
-        return render(request,'errors/404.html')
+    if not has_access_to_document(request.user, document):
+        return render(request, 'errors/404.html')
+
+    
     
     user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
     documentForm = DocumentForm(initial={'content': document.content})
@@ -139,14 +143,14 @@ def view_document(request,uid):
     read_only_mode = request.GET.get('read-only', False) == 'true'
     
     domain = request.META['HTTP_HOST']
-    domain_name = f'http://{domain}/view_document/{uid}/?read-only=true'
+    domain_name = f'http://{domain}/documents/{uid}/?read-only=true'
     
     shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)
 
 
     user_documents_ = Document.objects.filter(user=request.user)
     shared_documents_ = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)    
-    active_tab = 'my_documents' if document in user_documents_ else 'shared_documents' if document in shared_documents_ else None
+    active_tab = 'my_document' if document in user_documents_ else 'shared_document' if document in shared_documents_ else None
 
     if request.method == 'POST':
         edit_form = DocumentForm(request.POST, instance=document)
@@ -160,8 +164,6 @@ def view_document(request,uid):
     shared_folders = Folder.objects.filter(
         foldersharing__user=request.user.id,
         foldersharing__accepted=True,
-        parent_folder__foldersharing__user=request.user.id,
-        parent_folder__foldersharing__accepted=True
     ).distinct()
     parent_folders = get_parents_document(document)
     
@@ -221,10 +223,9 @@ def auto_save(request, id):
 
     
 """ ajout utilisateur dans un document  """
-
 @csrf_exempt
 @login_required(login_url='login')
-def add_colaborateur(request, id):
+def add_colaborateur_document(request, id):
     document = get_object_or_404(Document, id=id)
     
     if request.method == 'POST':
@@ -247,7 +248,7 @@ def add_colaborateur(request, id):
 
 @csrf_exempt
 @login_required(login_url='login')
-def delete_colaborateur(request, ids):
+def delete_colaborateur_document(request, ids):
     try:
         user_id, document_id = ids.split('-')
         user_id = int(user_id)
@@ -265,13 +266,12 @@ def delete_colaborateur(request, ids):
 
 @csrf_exempt
 @login_required(login_url='login')
-def validate_shared_user(request, user_id, document_id):
+def validate_shared_document(request, user_id, document_id):
     document = get_object_or_404(Document, id=document_id)
     document_sharing = get_object_or_404(DocumentSharing, user_id=user_id, document_id=document_id)
     document_sharing.accepted = True
     document_sharing.save()
     return redirect('view_document', uid=document.uid)
-    
 
 """ Errors pages  """
 
@@ -331,27 +331,35 @@ def rename_folder(request, id):
 
 def view_folder(request, uid):
     folder = get_object_or_404(Folder, uid=uid)
+    if not has_access_to_folder(request.user, folder):
+        return render(request, 'errors/404.html')
+    
     subfolders = Folder.objects.filter(parent_folder=folder).order_by('-created_at')
     documents = Document.objects.filter(folder=folder).order_by('-created_at')
 
+        
     # Combine subfolders and documents into a single list
     all_items = list(subfolders) + list(documents)
     # Sort the combined list by created_at
     sorted_items = sorted(all_items, key=attrgetter('created_at'), reverse=True)
     # Group the sorted list by created_at
     grouped_items = {key: list(group) for key, group in groupby(sorted_items, key=lambda x: x.created_at.date())}
+    
 
     user_folders = Folder.objects.filter(user=request.user, parent_folder=None)
     shared_folders = Folder.objects.filter(
         foldersharing__user=request.user.id,
         foldersharing__accepted=True,
-        parent_folder__foldersharing__user=request.user.id,
-        parent_folder__foldersharing__accepted=True
     ).distinct()
+    
+    
     user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
-    shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True, folder__isnull=True)
-    active_tab = 'my_folders' if folder in user_folders else 'shared_folders' if folder in shared_folders else None
+    shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)
+    active_tab = 'my_folder' if folder in user_folders else 'shared_folder' if folder in shared_folders else None
     parent_folders = get_parents_folder(folder)
+    
+    shared_users_not_accepted = CustomUser.objects.filter(foldersharing__folder_id=folder.id, foldersharing__accepted=False)
+    shared_users_accepted = CustomUser.objects.filter(foldersharing__folder_id=folder.id, foldersharing__accepted=True)
     
     context ={
         "folder" : folder,
@@ -361,10 +369,58 @@ def view_folder(request, uid):
         'user_documents': user_documents,
         'shared_documents': shared_documents,
         'active_tab': active_tab,
-        "parent_folders": parent_folders,
+        'parent_folders': parent_folders,
+        'shared_users_not_accepted': shared_users_not_accepted,
+        'shared_users_accepted': shared_users_accepted,
     }
     
     return render(request, 'view_folder.html', context)
 
 
+@csrf_exempt
+def add_colaborateur_folder(request, id):
+    folder = get_object_or_404(Folder, id=id)
+    
+    if request.method == 'POST':
+        matricule = request.POST.get('matricule')
+
+        collaborateur = CustomUser.objects.filter(matricule=matricule).first()
+        if collaborateur.id != folder.user_id :
+            if collaborateur:
+                if collaborateur not in folder.shared.all():
+                    folder.shared.add(collaborateur)
+                    messages.success(request, f'{collaborateur.matricule} ajouté avec succès à la liste des collaborateurs.')
+                else:
+                    messages.warning(request, f'{collaborateur.matricule} est déjà dans la liste des collaborateurs.')
+            else:
+                messages.error(request, f'Aucun utilisateur trouvé avec le matricule {matricule}.')
+        else:
+            messages.warning(request, f'Vous ne pouvez pas vous ajouter au document')
+            
+    return redirect('view_folder', uid=folder.uid)
+
+@csrf_exempt
+def delete_colaborateur_folder(request, ids):
+    try:
+        user_id, folder_id = ids.split('-')
+        user_id = int(user_id)
+        folder_id = int(folder_id)
+        folder = get_object_or_404(Folder, id=folder_id)
+
+        folder.shared.remove(user_id)
+    
+        return HttpResponse(status=200)
+    
+    except Document.DoesNotExist:
+        return JsonResponse({'message': 'Document not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=500)
+
+@csrf_exempt
+def validate_shared_folder(request, user_id, folder_id):
+    folder = get_object_or_404(Folder, id=folder_id)
+    folder_sharing = get_object_or_404(FolderSharing, user_id=user_id, folder_id=folder_id)
+    folder_sharing.accepted = True
+    folder_sharing.save()
+    return redirect('view_folder', uid=folder.uid)
 

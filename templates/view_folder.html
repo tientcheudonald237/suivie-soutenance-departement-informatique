@@ -10,18 +10,29 @@
     }
 </style>
 {% endblock %}
-<!-- 
+
 {% block navbars %}
-    {% if active_tab == 'my_documents' %}
+    {% if active_tab == 'my_folder' %}
         <li>
-            <a href="#" class="nav-link" title="Partager le document" style="color: black;"
+            <a href="#" class="nav-link" title="Supprimer le dossier" style="color: black;"
+                onclick="delete_folder('{{ folder.id }}', '{{ folder.parent_folder.uid }}')">
+                <i class="material-icons">delete</i>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" title="Renommer le dossier" style="color: black;"
+                onclick="open_modal_rename_folder($(this));" data-folderid="{{ folder.id }}" data-foldername="{{ folder.name }}" >
+                <i class="material-icons">edit</i>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" title="Partager le dossier" style="color: black;"
                 data-toggle="modal" data-target="#sharedUser">
                 <i class="material-icons">people</i>
             </a>
         </li>
     {% endif %}
-{% endblock %} -->
-
+{% endblock %}
 
 {% block template %}
     <nav aria-label="breadcrumb">
@@ -129,7 +140,7 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-6">
-                        <form method="POST" action="{% url 'add_colaborateur' id=folder.id %}" class="">
+                        <form method="POST" action="{% url 'add_colaborateur_folder' id=folder.id %}" class="">
                             {% csrf_token %}
                             <div class="form-group">
                                 <label>Matricule</label>
@@ -140,33 +151,27 @@
                             </div>
                             <button type="submit" class="btn btn-success btn-block waves-effect">Ajouter</button>
                         </form>
-                        <div>
-                            <h6 class="pt-2">Lien en mode lecture : <span class="text-info">{{ domaine_name }}</span>
-                            </h6>
-                        </div>
                     </div>
                     <div class="col-6">
                         <div>
                             <h5 class="text-success">Collaborateurs</h5>
                             <ul class="list-group">
-                                {% for user in shared_users_accepted %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {{ user.matricule }}
-                                    <button class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></button>
-                                </li>
+                                {% for user in shared_users_accepted  %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ user.matricule }}
+                                        <button class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></button>
+                                    </li>
                                 {% endfor %}
                             </ul>
                         </div>
                         <div>
                             <h5 class="text-warning">En attente de validation</h5>
                             <ul class="list-group">
-                                {% for user in shared_users_not_accepted %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {{ user.matricule }}
-                                    <button class="badge badge-danger badge-pill"
-                                        onclick="delete_shared_user('{{ user.id }}-{{ document.id }}');"><i
-                                            class="fas fa-trash"></i></button>
-                                </li>
+                                {% for user in shared_users_not_accepted  %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ user.matricule }}
+                                        <button class="badge badge-danger badge-pill" onclick="delete_shared_user('{{ user.id }}-{{ folder.id }}');"><i class="fas fa-trash"></i></button>
+                                    </li>
                                 {% endfor %}
                             </ul>
                         </div>
@@ -306,7 +311,7 @@
         }).then((willDelete) => {
             if (willDelete) {
                 var xhr = new XMLHttpRequest();
-                var url = "/delete_colaborateur/" + ids + "/";
+                var url = "/delete_colaborateur_folder/" + ids + "/";
                 xhr.open('DELETE', url);
                 xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
                 xhr.onload = function () {
@@ -390,9 +395,5 @@
         $('#renameFolder').modal('show');
     }
 </script>
-
-
-
-
 
 {% endblock %}

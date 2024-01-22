@@ -76,7 +76,7 @@
                                 src="{% static 'assets/img/user.jpg' %}" class="user-img-radious-style"> <span
                                 class="d-sm-none d-lg-inline-block"></span></a>
                         <div class="dropdown-menu dropdown-menu-right pullDown">
-                            <div class="dropdown-title">Hello Sarah Smith</div>
+                            <div class="dropdown-title">{{ user.matricule }} {{ user.first_name }} {{ user.last_name }}</div>
                             <a href="profile.html" class="dropdown-item has-icon"> <i class="far
 										fa-user"></i> Profile
                             </a>
@@ -105,7 +105,7 @@
                         <li {% if request.path == '#'%} class="active" {% endif %}><a class="nav-link" href="#" data-toggle="modal" data-target="#addDocument"><i data-feather="file-plus"></i><span>Document</span></a></li>    
                         <li class="menu-header">REPERTOIRE</li>
                         <li {% if request.path == "/" %} class="active" {% endif %}><a class="nav-link" href="{% url 'index' %}"><i data-feather="home"></i><span>Accueil</span></a></li>
-                        <li class="dropdown {% if active_tab == 'my_documents' or active_tab == 'my_folders' %}active{% endif %}">
+                        <li class="dropdown {% if active_tab == 'my_document' or active_tab == 'my_folder' %}active{% endif %}">
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="monitor"></i><span>Mes Documents</span></a>
                             <ul class="dropdown-menu">
                                 {% for fold in user_folders %}
@@ -127,7 +127,7 @@
                             </ul>
                         </li>
                         
-                        <li class="dropdown {% if active_tab == 'shared_folders' or active_tab == 'shared_documents' %}active{% endif %}">
+                        <li class="dropdown {% if active_tab == 'shared_folder' or active_tab == 'shared_document' %}active{% endif %}">
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="users"></i><span>Partagés</span></a>
                             <ul class="dropdown-menu">
                                 {% for fold in shared_folders %}
@@ -148,7 +148,7 @@
                                 {% endfor %}
                             </ul>
                         </li>
-                        <li {% if request.path == "favoris" %} class="active" {% endif %}><a class="nav-link" href="{% url 'notification' %}"><i data-feather="star"></i><span>Favoris</span></a></li>
+                        <!-- <li {% if request.path == "favoris" %} class="active" {% endif %}><a class="nav-link" href="{% url 'notification' %}"><i data-feather="star"></i><span>Favoris</span></a></li> -->
                         <li class="menu-header">NOTIFICATION</li>
                         <li {% if request.path == "/notification" %} class="active" {% endif %}><a class="nav-link" href="{% url 'notification' %}"><i data-feather="bell"></i><span>Notifications</span></a></li>
                         
