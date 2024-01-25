@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from .import views
+from soutenance import services
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -23,4 +24,9 @@ urlpatterns = [
     path('add_colaborateur_folder/<int:id>/', views.add_colaborateur_folder, name='add_colaborateur_folder'),
     path('delete_colaborateur_folder/<str:ids>/', views.delete_colaborateur_folder, name='delete_colaborateur_folder'),
     path('validate_shared_folder/<int:user_id>-<int:folder_id>/', views.validate_shared_folder, name='validate_shared_folder'),
+    
+    #session
+    path('create_session', views.create_session, name='create_session'),
+    path('level', services.admin_level, name='level'),
+    path('sector', services.admin_sector, name='sector'),
 ]

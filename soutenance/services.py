@@ -1,5 +1,7 @@
-from .models import  DocumentSharing, Folder, FolderSharing
+from django.shortcuts import render
+from .models import  DocumentSharing, Folder, FolderSharing, Level, Sector
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
 
 
 def get_parents_folder(folder):
@@ -45,3 +47,34 @@ def has_access_to_document(user, document):
         return has_access_to_folder(user, document.folder)
 
     return False
+
+
+@csrf_exempt
+def admin_index(request):
+    levels = Level.objects.all()
+    sectors = Sector.objects.all()
+    context = {
+        'levels': levels,
+        'sectors': sectors,
+    }
+    return render(request, 'admin/session.html', context)
+
+@csrf_exempt
+def admin_sector(request):
+    levels = Level.objects.all()
+    sectors = Sector.objects.all()
+    context = {
+        'levels': levels,
+        'sectors': sectors,
+    }
+    return render(request, 'admin/sector.html', context)
+
+@csrf_exempt
+def admin_level(request):
+    levels = Level.objects.all()
+    sectors = Sector.objects.all()
+    context = {
+        'levels': levels,
+        'sectors': sectors,
+    }
+    return render(request, 'admin/level.html', context)

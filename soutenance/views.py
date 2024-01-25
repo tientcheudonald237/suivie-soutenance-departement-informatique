@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .models import Document, CustomUser, Folder, FolderSharing, DocumentSharing
+from .models import Document, CustomUser, Folder, FolderSharing, DocumentSharing, Teacher, Student, Admin, Level, Sector, Session
 from .forms import DocumentForm
 from django.urls import reverse
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
@@ -10,13 +10,21 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from itertools import groupby
 from operator import attrgetter
-from .services import get_parents_document, get_parents_folder, has_access_to_folder, has_access_to_document
+from .services import *
 
 """ Page """
 
 @csrf_exempt
 def index(request):
     if request.user.is_authenticated:
+        user = request.user
+        
+        # if user.is_superuser:
+        #     return admin_index(request)
+        # else:
+        #     return redirect('register')
+
+            
         user_folders = Folder.objects.filter(user=request.user, parent_folder=None)
         shared_folders = Folder.objects.filter(
             foldersharing__user=request.user.id,
@@ -70,6 +78,36 @@ def notification(request):
 """ Connexion """
 
 @csrf_exempt
+def register_view(request):
+    return render(request, 'authentification/register.html')
+
+@csrf_exempt
+def register_post(request):
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        matricule = request.POST.get('matricule')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password_confirm = request.POST.get('password-confirm')
+
+        if password != password_confirm:
+            messages.error(request, 'Password confirmation does not match.')
+            return redirect('register')  
+
+        admin_user = Admin.objects.create_superuser(
+            matricule=matricule,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            password=password
+        )
+
+        login(request, admin_user)
+        messages.success(request, 'Registration successful.')
+        return redirect('index') 
+    
+@csrf_exempt
 def login_view(request):
     return render(request, 'authentification/login.html')
 
@@ -81,9 +119,7 @@ def login_post(request):
         
         user = authenticate(request, username=matricule, password=password)
 
-        if user is not None:
-            login(request, user)
-            return redirect('index')
+        return redirect('index')
         
     context = {
         'ERROR' : 'authentification',
@@ -424,3 +460,33 @@ def validate_shared_folder(request, user_id, folder_id):
     folder_sharing.save()
     return redirect('view_folder', uid=folder.uid)
 
+
+
+""" SESSION CRUD"""
+
+@csrf_exempt
+def create_session(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        year = request.POST.get('year')
+        level_id = request.POST.get('level_id')
+        sector_id = request.POST.get('sector_id')
+        max_groupe = request.POST.get('max_groupe')
+        print(f'{name} {year} {level_id} {sector_id} {max_groupe}')
+        if name and year and sector_id and  level_id and max_groupe:
+            level = Level.objects.get(pk=level_id)
+            sector = Sector.objects.get(pk=sector_id)
+            Session.objects.create(
+                name=name,
+                year=year,
+                level=level,
+                sector=sector,
+                max_groupe=max_groupe
+            )
+            messages.success(request, 'Session creer avec success.')
+            return redirect('index') 
+        else:
+            messages.error(request, 'Tous les champs sont necessaires')
+            return redirect(request.session.get('previous_url', reverse('index')))
+    
+    return redirect('index')

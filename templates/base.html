@@ -64,12 +64,6 @@
                     </ul>
                 </div>
                 <ul class="navbar-nav navbar-right">
-                    <!-- <li>
-                        <a href="#" class="nav-link" title="ajouter un document" style="color: black;"
-                            data-toggle="modal" data-target="#addDocument">
-                            <i class="material-icons">add_circle</i>
-                        </a>
-                    </li> -->
                     {% block navbars %}{% endblock %}
                     <li class="dropdown"><a href="#" data-toggle="dropdown"
                             class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image"
@@ -126,7 +120,6 @@
                                 {% endfor %}
                             </ul>
                         </li>
-                        
                         <li class="dropdown {% if active_tab == 'shared_folder' or active_tab == 'shared_document' %}active{% endif %}">
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="users"></i><span>Partagés</span></a>
                             <ul class="dropdown-menu">
