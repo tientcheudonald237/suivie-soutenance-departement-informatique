@@ -19,10 +19,10 @@ def index(request):
     if request.user.is_authenticated:
         user = request.user
         
-        # if user.is_superuser:
-        #     return admin_index(request)
-        # else:
-        #     return redirect('register')
+        if user.is_superuser:
+            return admin_index(request)
+        else:
+            return redirect('register')
 
             
         user_folders = Folder.objects.filter(user=request.user, parent_folder=None)

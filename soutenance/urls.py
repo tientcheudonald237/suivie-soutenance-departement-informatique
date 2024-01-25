@@ -24,7 +24,7 @@ urlpatterns = [
     path('add_colaborateur_folder/<int:id>/', views.add_colaborateur_folder, name='add_colaborateur_folder'),
     path('delete_colaborateur_folder/<str:ids>/', views.delete_colaborateur_folder, name='delete_colaborateur_folder'),
     path('validate_shared_folder/<int:user_id>-<int:folder_id>/', views.validate_shared_folder, name='validate_shared_folder'),
-    
+    path('supervisor', services.admin_supervisor, name='supervisor'),
     #session
     path('create_session', views.create_session, name='create_session'),
     path('level', services.admin_level, name='level'),

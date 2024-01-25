@@ -78,3 +78,13 @@ def admin_level(request):
         'sectors': sectors,
     }
     return render(request, 'admin/level.html', context)
+
+@csrf_exempt
+def admin_supervisor(request):
+    levels = Level.objects.all()
+    sectors = Sector.objects.all()
+    context = {
+        'levels': levels,
+        'sectors': sectors,
+    }
+    return render(request, 'admin/supervisor.html', context)

@@ -84,6 +84,9 @@
                         <li {% if request.path == "/level" %} class="active" {% endif %}><a class="nav-link"
                             href="{% url 'level' %}"><i data-feather="trending-up"></i><span>Niveau</span></a>
                         </li>
+                        <li {% if request.path == "/supervisor" %} class="active" {% endif %}><a class="nav-link"
+                            href="{% url 'supervisor' %}"><i data-feather="user"></i><span>Superviseur</span></a>
+                        </li>
                     </ul>
                 </aside>
             </div>
