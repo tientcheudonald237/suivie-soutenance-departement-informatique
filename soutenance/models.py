@@ -104,11 +104,8 @@ class Sector(models.Model):
 class Student(CustomUser):
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
 
-class Supervisor(CustomUser):
-    pass
-
 class Teacher(CustomUser):
-    pass
+    is_supervisor = models.BooleanField(default=False)
 
 class Admin(CustomUser):
    pass
@@ -119,7 +116,7 @@ class Session(models.Model):
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
     sector = models.ForeignKey(Sector, on_delete=models.CASCADE)
     max_groupe = models.IntegerField()
-    supervisor = models.ManyToManyField(Supervisor)
+    supervisor = models.ManyToManyField(Teacher)
 
 class Theme(models.Model):
     numero = models.IntegerField(unique=True)

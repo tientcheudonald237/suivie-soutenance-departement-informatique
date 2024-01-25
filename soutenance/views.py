@@ -4,7 +4,7 @@ from django.contrib import messages
 from .models import Document, CustomUser, Folder, FolderSharing, DocumentSharing, Teacher, Student, Admin, Level, Sector, Session
 from .forms import DocumentForm
 from django.urls import reverse
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponseNotAllowed, JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -16,34 +16,35 @@ from .services import *
 
 @csrf_exempt
 def index(request):
+    print(request.user.is_authenticated)
     if request.user.is_authenticated:
         user = request.user
         
         if user.is_superuser:
             return admin_index(request)
         else:
-            return redirect('register')
+            # return redirect('register')
 
             
-        user_folders = Folder.objects.filter(user=request.user, parent_folder=None)
-        shared_folders = Folder.objects.filter(
-            foldersharing__user=request.user.id,
-            foldersharing__accepted=True,
-            parent_folder__foldersharing__user=request.user.id,
-            parent_folder__foldersharing__accepted=True
-        ).distinct()
-        
-        user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
-        shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)
-        
+            user_folders = Folder.objects.filter(user=request.user, parent_folder=None)
+            shared_folders = Folder.objects.filter(
+                foldersharing__user=request.user.id,
+                foldersharing__accepted=True,
+                parent_folder__foldersharing__user=request.user.id,
+                parent_folder__foldersharing__accepted=True
+            ).distinct()
+            
+            user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
+            shared_documents = Document.objects.filter(documentsharing__user=request.user.id, documentsharing__accepted=True)
+            
 
-        context = {
-            'shared_folders': shared_folders,
-            'user_folders': user_folders,
-            'user_documents': user_documents,
-            'shared_documents': shared_documents,
-        }
-        return render(request, 'index.html', context)
+            context = {
+                'shared_folders': shared_folders,
+                'user_folders': user_folders,
+                'user_documents': user_documents,
+                'shared_documents': shared_documents,
+            }
+            return render(request, 'index.html', context)
     else:
         return render(request, 'index.html')
 
@@ -118,16 +119,18 @@ def login_post(request):
         password = request.POST.get('password')
         
         user = authenticate(request, username=matricule, password=password)
-
-        return redirect('index')
         
-    context = {
-        'ERROR' : 'authentification',
-        'ERROR_MESSAGE' : 'Invalide matricule ou mot de passe'
-    }
+        if user is not None:
+            login(request, user)
+            return redirect('index')
+        else:
+            context = {
+                'ERROR': 'authentification',
+                'ERROR_MESSAGE': 'Invalide matricule ou mot de passe'
+            }
+            return render(request, 'authentification/login.html', context)
     
-    return render(request, 'authentification/login.html', context)
-
+    return HttpResponseNotAllowed(['POST'])
 @csrf_exempt
 @login_required(login_url='login')
 def logout_view(request):
