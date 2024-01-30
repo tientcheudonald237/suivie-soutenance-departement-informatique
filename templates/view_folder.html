@@ -10,114 +10,121 @@
     }
 </style>
 {% endblock %}
-<!-- 
+
 {% block navbars %}
-    {% if active_tab == 'my_documents' %}
+    {% if active_action == 'my_folder' %}
         <li>
-            <a href="#" class="nav-link" title="Partager le document" style="color: black;"
+            <a href="#" class="nav-link" title="Supprimer le dossier" style="color: black;"
+                onclick="delete_folder('{{ folder.id }}', '{{ folder.parent_folder.uid }}')">
+                <i class="material-icons">delete</i>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" title="Renommer le dossier" style="color: black;"
+                onclick="open_modal_rename_folder($(this));" data-folderid="{{ folder.id }}" data-foldername="{{ folder.name }}" >
+                <i class="material-icons">edit</i>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" title="Partager le dossier" style="color: black;"
                 data-toggle="modal" data-target="#sharedUser">
                 <i class="material-icons">people</i>
             </a>
         </li>
     {% endif %}
-{% endblock %} -->
+{% endblock %}
 
 {% block template %}
-<div class="row">
-    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
-        <div class="card" style="position: relative;">
-            <div class="card-statistic-4">
-                <div class="align-items-center justify-content-between">
-                    <div class="row">
-                        <a class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0" data-toggle="modal" data-target="#addDocument">
-                            <div class="banner-img">
-                                <img src="/static/assets/img/plus.png" alt="">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            {% for parent_folder in parent_folders %}
+                <li class="breadcrumb-item"><a href="{% url 'view_folder' uid=parent_folder.uid %}"><i class="fas fa-arrow-left"></i> {{ parent_folder.name|slice:":16" }}{% if parent_folder.name|length > 16 %}...{% endif %}</a></li>
+            {% endfor %}
+            <li class="breadcrumb-item active" aria-current="page">{{ folder.name }}</li>
+        </ol>
+    </nav>
+    <div class="row">
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <div class="card" style="position: relative;">
+                <div class="card-statistic-4">
+                    <div class="align-items-center justify-content-between">
+                        <div class="row">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0" data-toggle="modal" data-target="#addDocument_folder">
+                                <div class="banner-img">
+                                    <img src="/static/assets/img/plus.png" alt="">
+                                </div>
                             </div>
-                        </a>
-                        <!-- <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                            <a class="banner-img"  style="width: 80px;">
-                                <img src="/static/assets/img/dossier-plus.png" alt="">
+                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3" data-toggle="modal" data-target="#addFolder_folder">
+                                <a class="banner-img"  style="width: 80px;">
+                                    <img src="/static/assets/img/dossier-plus.png" alt="">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% for date, items in grouped_items.items %}
+            <div class="col-12">
+                <h6>{{ date}}</h6>
+            </div>
+            {% for item in items %}
+                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
+                    <div class="card" style="position: relative;">
+                        <div class="card-statistic-4">
+                            <div class="align-items-center justify-content-between">
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                                        <div class="banner-img">
+                                            {% if item.type == 'word' %}
+                                                <img src="/static/assets/img/word.png" alt="">
+                                            {% else %}
+                                                <img src="/static/assets/img/dossier2.png" alt="">
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                                        <div class="card-content">
+                                            <br/>
+                                            {% if item.type == 'word' %}
+                                                <a href="{% url 'view_document' uid=item.uid %}" class="mt-5">{{ item.title|slice:":30" }}{% if item.title|length > 40 %}...{% endif %}</a>
+                                            {% else %}
+                                                <a href="{% url 'view_folder' uid=item.uid %}" class="mt-5">{{ item.name|slice:":30" }}{% if item.name|length > 40 %}...{% endif %}</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dropdown dropright" style="position: absolute;top: 10px;right: 16px;">
+                            <a class="dropdown-toggle btn" type="button" id="dropdownMenuButton" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
                             </a>
-                        </div> -->
+                            <div class="dropdown-menu dropright" aria-labelledby="dropdownMenuButton">
+                                {% if item.type == 'word' %}
+                                    <a class="dropdown-item rename-document" onclick="open_modal_rename_document($(this));" href="#" data-docid="{{ item.id }}" data-docname="{{ item.title }}">
+                                        <i class="fas fa-edit"></i> Renommer
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="#" onclick="delete_document('{{ item.id }}','{{ item.folder.uid }}');"><i class="fas fa-trash-alt"></i> Supprimer</a>
+                                    <!-- <a class="dropdown-item" href="#"><i class="fas fa-user-plus"></i> Ajouter un Collaborateur</a> -->
+                                {% else %}
+                                <a class="dropdown-item" href="#" onclick="open_modal_rename_folder($(this));" data-folderid="{{ item.id }}" data-foldername="{{ item.name }}"><i class="fas fa-edit"></i> Renommer</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" onclick="delete_folder('{{ item.id }}','{{ item.parent_folder.uid }}')"><i class="fas fa-trash-alt"></i> Supprimer</a>
+                                <!-- <a class="dropdown-item" href="#"><i class="fas fa-user-plus"></i> Ajouter un Collaborateur</a> -->
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            {% endfor %}
+        {% endfor %}
     </div>
-    {% for subfolder in  subfolders %}
-        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
-            <div class="card" style="position: relative;">
-                <div class="card-statistic-4">
-                    <div class="align-items-center justify-content-between">
-                        <div class="row">
-                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                                <div class="banner-img">
-                                    <img src="/static/assets/img/dossier2.png" alt="">
-                                </div>
-                            </div>
-                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                                <div class="card-content">
-                                    <br/>
-                                    <a href="#" class="mt-5">{{ subfolder.name }}</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dropdown dropright" style="position: absolute;top: 10px;right: 16px;">
-                    <a class="dropdown-toggle btn" type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </a>
-                    <div class="dropdown-menu dropright" aria-labelledby="dropdownMenuButton">
-                        <!-- <a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Ajouter aux favoris</a> -->
-                        <a class="dropdown-item" href="#"><i class="fas fa-edit"></i> Renommer</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#"><i class="fas fa-trash-alt"></i> Supprimer</a>
-                        <a class="dropdown-item" href="#"><i class="fas fa-user-plus"></i> Ajouter un Collaborateur</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endfor %}
-    {% for docment in  documents %}
-        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
-            <div class="card" style="position: relative;">
-                <div class="card-statistic-4">
-                    <div class="align-items-center justify-content-between">
-                        <div class="row">
-                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                                <div class="banner-img">
-                                    <img src="/static/assets/img/word.png" alt="">
-                                </div>
-                            </div>
-                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                                <div class="card-content">
-                                    <br/>
-                                    <a href="{% url 'view_document' uid=docment.uid %}" class="mt-5">{{ docment.title }}</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="dropdown dropright" style="position: absolute;top: 10px;right: 16px;">
-                    <a class="dropdown-toggle btn" type="button" id="dropdownMenuButton" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </a>
-                    <div class="dropdown-menu dropright" aria-labelledby="dropdownMenuButton">
-                        <!-- <a class="dropdown-item" href="#"><i class="fas fa-heart"></i> Ajouter aux favoris</a> -->
-                        <a class="dropdown-item" href="#"><i class="fas fa-edit"></i> Renommer</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#"><i class="fas fa-trash-alt"></i> Supprimer</a>
-                        <a class="dropdown-item" href="#"><i class="fas fa-user-plus"></i> Ajouter un Collaborateur</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endfor %}
-</div>
 {% endblock %}
+
+
 
 {% block modal %}
 <div class="modal fade bd-example-modal-lg" id="sharedUser" tabindex="-1" role="dialog"
@@ -133,7 +140,7 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-6">
-                        <form method="POST" action="{% url 'add_colaborateur' id=folder.id %}" class="">
+                        <form method="POST" action="{% url 'add_colaborateur_folder' id=folder.id %}" class="">
                             {% csrf_token %}
                             <div class="form-group">
                                 <label>Matricule</label>
@@ -144,33 +151,27 @@
                             </div>
                             <button type="submit" class="btn btn-success btn-block waves-effect">Ajouter</button>
                         </form>
-                        <div>
-                            <h6 class="pt-2">Lien en mode lecture : <span class="text-info">{{ domaine_name }}</span>
-                            </h6>
-                        </div>
                     </div>
                     <div class="col-6">
                         <div>
                             <h5 class="text-success">Collaborateurs</h5>
                             <ul class="list-group">
-                                {% for user in shared_users_accepted %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {{ user.matricule }}
-                                    <button class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></button>
-                                </li>
+                                {% for user in shared_users_accepted  %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ user.matricule }}
+                                        <button class="badge badge-danger badge-pill"><i class="fas fa-trash"></i></button>
+                                    </li>
                                 {% endfor %}
                             </ul>
                         </div>
                         <div>
                             <h5 class="text-warning">En attente de validation</h5>
                             <ul class="list-group">
-                                {% for user in shared_users_not_accepted %}
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    {{ user.matricule }}
-                                    <button class="badge badge-danger badge-pill"
-                                        onclick="delete_shared_user('{{ user.id }}-{{ document.id }}');"><i
-                                            class="fas fa-trash"></i></button>
-                                </li>
+                                {% for user in shared_users_not_accepted  %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ user.matricule }}
+                                        <button class="badge badge-danger badge-pill" onclick="delete_shared_user('{{ user.id }}-{{ folder.id }}');"><i class="fas fa-trash"></i></button>
+                                    </li>
                                 {% endfor %}
                             </ul>
                         </div>
@@ -180,6 +181,96 @@
         </div>
     </div>
 </div>
+<!-- Modal de creation d'un dossier -->
+<div class="modal fade" id="renameFolder" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Renommer un Dossier</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="rename_folder_form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Nom du dossier</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Nom du dossier"
+                                name="folder_name" id="input_name_folder" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-block waves-effect">Renommer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal de creation d'un document -->
+<div class="modal fade" id="addDocument_folder" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Creer un Document</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'create_document' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Nom du document</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Nom du document"
+                                name="document_name" required>
+                        </div>
+                    </div>
+                    <input type="hidden" name="parent_folder" value="{{ folder.id }}">
+                    <div class="form-group">
+                        <label>Type</label>
+                        <div class="input-group">
+                            <select type="text" class="form-control" name="document_type" required>
+                                <option value="word">Word</option>
+                                <!-- <option value="excel">Excel</option> -->
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block waves-effect">Creer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal de creation d'un dossier -->
+<div class="modal fade" id="addFolder_folder" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Creer un Dossier</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'create_folder' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Nom du dossier</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Nom du dossier"
+                                name="folder_name" required>
+                        </div>
+                    </div>
+                    <input type="hidden" name="parent_folder" value="{{ folder.id }}">
+                    <button type="submit" class="btn btn-primary btn-block waves-effect">Creer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal de renommage d'un document -->
 <div class="modal fade" id="renameDocument" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -190,56 +281,26 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form method="POST" action="{% url 'rename_document' id=folder.id %}" id="rename_document_form">
+                <form method="POST" action="" id="rename_document_form">
                     {% csrf_token %}
                     <div class="form-group">
                         <label>Nom du document</label>
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Nom du document"
-                                value="{{ document.title }}" name="document_name" required>
+                                   name="document_name" value="mama" id="input_name_document" required>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-warning btn-block waves-effect">Renommer</button>
                 </form>
-            </div>
+            </div>            
         </div>
     </div>
 </div>
 {% endblock %}
 
+
 {% block script %}
 <script type="text/javascript">
-    function delete_document(id) {
-        swal({
-            title: 'Suppression',
-            text: 'Voulez vous vraiment supprimer ce document ??',
-            icon: 'warning',
-            buttons: true,
-            dangerMode: true,
-        }).then((willDelete) => {
-            if (willDelete) {
-                var xhr = new XMLHttpRequest();
-                var url = "/delete_document/" + id + "/";
-                xhr.open('DELETE', url);
-                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
-                xhr.onload = function () {
-                    if (xhr.status === 200) {
-                        console.log(xhr.status)
-                        swal('Suppression réussie', {
-                            icon: 'success',
-                        });
-                        window.location.href = '/';
-                    } else {
-                        swal('Une erreur s\'est produite', {
-                            icon: 'error',
-                        });
-                    }
-                };
-                xhr.send();
-            }
-        });
-    }
-
     function delete_shared_user(ids) {
         swal({
             title: 'Suppression',
@@ -250,7 +311,7 @@
         }).then((willDelete) => {
             if (willDelete) {
                 var xhr = new XMLHttpRequest();
-                var url = "/delete_colaborateur/" + ids + "/";
+                var url = "/delete_colaborateur_folder/" + ids + "/";
                 xhr.open('DELETE', url);
                 xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
                 xhr.onload = function () {
@@ -271,5 +332,68 @@
         });
     }
 
+    
+    function delete_folder(id,parent_uid) {
+        swal({
+            title: 'Suppression',
+            text: 'Voulez vous vraiment supprimer ce dossier ? tous les dossiers et documents contenu a l\'interieure seras perdu a jamais !',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                var xhr = new XMLHttpRequest();
+                var url = "/delete_folder/" + id + "/";
+                xhr.open('DELETE', url);
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        console.log(xhr.status)
+                        swal('Suppression réussie', {
+                            icon: 'success',
+                        });
+                        
+                        if (parent_uid !== undefined && parent_uid !== null && parent_uid !== '') {
+                            window.location.href = '/folders/' + parent_uid + '/';
+                        } else {
+                            window.location.href = '/';
+                        }
+                        
+                    } else {
+                        swal('Une erreur s\'est produite', {
+                            icon: 'error',
+                        });
+                    }
+                };
+                xhr.send();
+            }
+        });
+    }
 </script>
+<script type="text/javascript"> 
+    function open_modal_rename_document(element){
+        var docId = element.data('docid');
+        var docName = element.data('docname');
+        
+        $('#input_name_document').val(docName);
+        
+        var url = "{% url 'rename_document' id=0 %}".replace('0', parseInt(docId));
+        $('#rename_document_form').attr('action', url);
+
+        $('#renameDocument').modal('show');
+    }
+
+    function open_modal_rename_folder(element){
+        var folderId = element.data('folderid');
+        var folderName = element.data('foldername');
+        
+        $('#input_name_folder').val(folderName);
+        
+        var url = "{% url 'rename_folder' id=0 %}".replace('0', parseInt(folderId));
+        $('#rename_folder_form').attr('action', url);
+
+        $('#renameFolder').modal('show');
+    }
+</script>
+
 {% endblock %}

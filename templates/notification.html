@@ -4,6 +4,26 @@
 
 {% block template %}
 <div class="row">
+    {% for notif in folders_not_accepted %}
+    <div class="col-12 col-md-6 col-lg-6">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h4>{{ notif.name }}</h4>
+                <div class="card-header-action">
+                    {% if 1 %}
+                        {% with url=user.id|stringformat:'s'|add:'-'|add:notif.id|stringformat:'s' %}
+                            <a href="{% url 'validate_shared_folder' user_id=user.id folder_id=notif.id %}" class="btn btn-success">Ouvrir</a>
+                        {% endwith %}                
+                    {% endif %}
+                    <button  onclick="delete_shared_user('{{ user.id }}-{{ notif.id }}')" class="btn btn-danger">Refuser</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5>{{ notif.user.matricule }} vous a partager le dossier <span class="text-info">{{ notif.title }}</span>.</h5>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
     {% for notif in documents_not_accepted %}
     <div class="col-12 col-md-6 col-lg-6">
         <div class="card card-primary">
@@ -12,7 +32,7 @@
                 <div class="card-header-action">
                     {% if 1 %}
                         {% with url=user.id|stringformat:'s'|add:'-'|add:notif.id|stringformat:'s' %}
-                            <a href="{% url 'validate_shared_user' user_id=user.id document_id=notif.id %}" class="btn btn-success">Ouvrir</a>
+                            <a href="{% url 'validate_shared_document' user_id=user.id document_id=notif.id %}" class="btn btn-success">Ouvrir</a>
                         {% endwith %}                
                     {% endif %}
                     <button  onclick="delete_shared_user('{{ user.id }}-{{ notif.id }}')" class="btn btn-danger">Refuser</button>
@@ -39,7 +59,7 @@
         }).then((willDelete) => {
             if (willDelete) {
                 var xhr = new XMLHttpRequest();
-                var url = "/delete_colaborateur/" + ids + "/";
+                var url = "/delete_colaborateur_document/" + ids + "/";
                 xhr.open('DELETE', url);
                 xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
                 xhr.onload = function () {

@@ -64,19 +64,13 @@
                     </ul>
                 </div>
                 <ul class="navbar-nav navbar-right">
-                    <!-- <li>
-                        <a href="#" class="nav-link" title="ajouter un document" style="color: black;"
-                            data-toggle="modal" data-target="#addDocument">
-                            <i class="material-icons">add_circle</i>
-                        </a>
-                    </li> -->
                     {% block navbars %}{% endblock %}
                     <li class="dropdown"><a href="#" data-toggle="dropdown"
                             class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image"
-                                src="{% static 'assets/img/user.png' %}" class="user-img-radious-style"> <span
+                                src="{% static 'assets/img/user.jpg' %}" class="user-img-radious-style"> <span
                                 class="d-sm-none d-lg-inline-block"></span></a>
                         <div class="dropdown-menu dropdown-menu-right pullDown">
-                            <div class="dropdown-title">Hello Sarah Smith</div>
+                            <div class="dropdown-title">{{ user.matricule }} {{ user.first_name }} {{ user.last_name }}</div>
                             <a href="profile.html" class="dropdown-item has-icon"> <i class="far
 										fa-user"></i> Profile
                             </a>
@@ -96,7 +90,7 @@
                 <aside id="sidebar-wrapper">
                     <div class="sidebar-brand">
                         <a href="{% url 'index' %}"> <img alt="image" src="{% static 'assets/img/logo.png' %}"
-                                class="header-logo" /> <span class="logo-name">Otika</span></a>
+                                class="header-logo" /> <span class="logo-name">T3MRD2</span></a>
                     </div>
                     <ul class="sidebar-menu">
                         {% if user.is_authenticated %}
@@ -105,7 +99,7 @@
                         <li {% if request.path == '#'%} class="active" {% endif %}><a class="nav-link" href="#" data-toggle="modal" data-target="#addDocument"><i data-feather="file-plus"></i><span>Document</span></a></li>    
                         <li class="menu-header">REPERTOIRE</li>
                         <li {% if request.path == "/" %} class="active" {% endif %}><a class="nav-link" href="{% url 'index' %}"><i data-feather="home"></i><span>Accueil</span></a></li>
-                        <li class="dropdown {% if active_tab == 'my_documents' or active_tab == 'my_folders' %}active{% endif %}">
+                        <li class="dropdown {% if active_tab == 'my_document' or active_tab == 'my_folder' %}active{% endif %}">
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="monitor"></i><span>Mes Documents</span></a>
                             <ul class="dropdown-menu">
                                 {% for fold in user_folders %}
@@ -126,8 +120,7 @@
                                 {% endfor %}
                             </ul>
                         </li>
-                        
-                        <li class="dropdown {% if active_tab == 'shared_folders' or active_tab == 'shared_documents' %}active{% endif %}">
+                        <li class="dropdown {% if active_tab == 'shared_folder' or active_tab == 'shared_document' %}active{% endif %}">
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="users"></i><span>Partagés</span></a>
                             <ul class="dropdown-menu">
                                 {% for fold in shared_folders %}
@@ -148,7 +141,7 @@
                                 {% endfor %}
                             </ul>
                         </li>
-                        <li {% if request.path == "favoris" %} class="active" {% endif %}><a class="nav-link" href="{% url 'notification' %}"><i data-feather="star"></i><span>Favoris</span></a></li>
+                        <!-- <li {% if request.path == "favoris" %} class="active" {% endif %}><a class="nav-link" href="{% url 'notification' %}"><i data-feather="star"></i><span>Favoris</span></a></li> -->
                         <li class="menu-header">NOTIFICATION</li>
                         <li {% if request.path == "/notification" %} class="active" {% endif %}><a class="nav-link" href="{% url 'notification' %}"><i data-feather="bell"></i><span>Notifications</span></a></li>
                         
@@ -193,7 +186,7 @@
             </footer>
         </div>
     </div>
-    <!-- Modal de creation d'un document -->
+    <!-- Modal de creation d'un document racine -->
     <div class="modal fade" id="addDocument" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -213,9 +206,6 @@
                                     name="document_name" required>
                             </div>
                         </div>
-                        {% if folder %}
-                            <input type="hidden" name="parent_folder" value="{{ folder.id }}">
-                        {% endif %}
                         <div class="form-group">
                             <label>Type</label>
                             <div class="input-group">
@@ -231,7 +221,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal de creation d'un dossier -->
+    <!-- Modal de creation d'un dossier racine -->
     <div class="modal fade" id="addFolder" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -325,9 +315,45 @@
 
     <!-- Template JS File -->
     <script src="{% static 'assets/js/scripts.js' %}"></script>
-
-    <!-- Custom JS File -->
-    <script src="{% static 'assets/js/custom.js' %}"></script>
+    
+    <script>
+        function delete_document(id,parent_uid) {
+            swal({
+                title: 'Suppression',
+                text: 'Voulez vous vraiment supprimer ce document ??',
+                icon: 'warning',
+                buttons: true,
+                dangerMode: true,
+            }).then((willDelete) => {
+                if (willDelete) {
+                    var xhr = new XMLHttpRequest();
+                    var url = "/delete_document/" + id + "/";
+                    xhr.open('DELETE', url);
+                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                    xhr.onload = function () {
+                        if (xhr.status === 200) {
+                            console.log(xhr.status)
+                            swal('Suppression réussie', {
+                                icon: 'success',
+                            });
+                            
+                            if (parent_uid !== undefined && parent_uid !== null && parent_uid !== '') {
+                                window.location.href = '/folders/' + parent_uid + '/';
+                            } else {
+                                window.location.href = '/';
+                            }
+                            
+                        } else {
+                            swal('Une erreur s\'est produite', {
+                                icon: 'error',
+                            });
+                        }
+                    };
+                    xhr.send();
+                }
+            });
+        }
+    </script>
     {% block script %}
     {% endblock %}
 </body>

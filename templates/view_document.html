@@ -14,7 +14,19 @@
 {% endblock %}
 
 {% block navbars %}
-    {% if active_tab == 'my_documents' %}
+    {% if active_tab == 'my_document' %}
+        <li>
+            <a href="#" class="nav-link" title="Supprimer le dossier" style="color: black;"
+            onclick="delete_document('{{ document.id }}','{{ document.folder.uid }}');" >
+            <i class="fas fa-trash text-danger delete-icon" data-document-id="{{ document.id }}"></i>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" title="Renommer le dossier" style="color: black;"
+                data-toggle="modal" data-target="#renameDocument" >
+                <i class="fas fa-paint-brush text-success rename-icon"></i>
+            </a>
+        </li>
         <li>
             <a href="#" class="nav-link" title="Partager le document" style="color: black;"
                 data-toggle="modal" data-target="#sharedUser">
@@ -25,8 +37,16 @@
 {% endblock %}
 
 {% block template %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        {% for parent_folder in parent_folders %}
+            <li class="breadcrumb-item"><a href="{% url 'view_folder' uid=parent_folder.uid %}"><i class="fas fa-arrow-left"></i> {{ parent_folder.name|slice:":16" }}{% if parent_folder.name|length > 16 %}...{% endif %}</a></li>
+        {% endfor %}
+        <li class="breadcrumb-item active" aria-current="page">{{ document.title }}</li>
+    </ol>
+</nav>
 {% if not read_only_mode %}
-{% if active_tab == 'my_documents' %}
+<!-- {% if active_tab == 'my_document' %}
     <div class="row p-t-10">
         <div class="col-12 col-md-6 col-lg-3">
             <div class="card card-primary">
@@ -36,18 +56,15 @@
                         <a class="btn" href="#" data-toggle="modal" data-target="#renameDocument">
                             <i class="fas fa-paint-brush text-success rename-icon"></i>
                         </a>
-                        <a class="btn" href="#" onclick="delete_document('{{ document.id }}');">
+                        <a class="btn" href="#" onclick="delete_document('{{ document.id }}','{{ document.folder.uid }}');">
                             <i class="fas fa-trash text-danger delete-icon" data-document-id="{{ document.id }}"></i>
                         </a>
                     </h3>
                 </div>
-                <!-- <div class="card-body">
-                    <p>Card <code>.card-primary</code></p>
-                </div> -->
             </div>
         </div>
     </div>
-{% endif %}
+{% endif %} -->
 <form method="post" action="{% url 'view_document' uid=document.uid %}">
     {% csrf_token %}
     {{ documentForm.as_p }}
@@ -86,7 +103,7 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-6">
-                        <form method="POST" action="{% url 'add_colaborateur' id=document.id %}" class="">
+                        <form method="POST" action="{% url 'add_colaborateur_document' id=document.id %}" class="">
                             {% csrf_token %}
                             <div class="form-group">
                                 <label>Matricule</label>
@@ -162,37 +179,6 @@
 <script src="https://cdn.ckeditor.com/4.16.2/standard/ckeditor.js"></script>
 
 <script type="text/javascript">
-    function delete_document(id) {
-        swal({
-            title: 'Suppression',
-            text: 'Voulez vous vraiment supprimer ce document ??',
-            icon: 'warning',
-            buttons: true,
-            dangerMode: true,
-        }).then((willDelete) => {
-            if (willDelete) {
-                var xhr = new XMLHttpRequest();
-                var url = "/delete_document/" + id + "/";
-                xhr.open('DELETE', url);
-                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
-                xhr.onload = function () {
-                    if (xhr.status === 200) {
-                        console.log(xhr.status)
-                        swal('Suppression réussie', {
-                            icon: 'success',
-                        });
-                        window.location.href = '/';
-                    } else {
-                        swal('Une erreur s\'est produite', {
-                            icon: 'error',
-                        });
-                    }
-                };
-                xhr.send();
-            }
-        });
-    }
-
     function delete_shared_user(ids){
         swal({
             title: 'Suppression',
@@ -203,7 +189,7 @@
         }).then((willDelete) => {
             if (willDelete) {
                 var xhr = new XMLHttpRequest();
-                var url = "/delete_colaborateur/" + ids + "/";
+                var url = "/delete_colaborateur_document/" + ids + "/";
                 xhr.open('DELETE', url);
                 xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
                 xhr.onload = function () {
@@ -223,7 +209,6 @@
             }
         });
     }
-
 </script>
 <script type="text/javascript">
 
@@ -261,7 +246,7 @@
 
     const socket = new WebSocket('ws://'+window.location.host+'/ws/livec/public_room/'); 
     
-    
+    console.log("--------------------------------------------"+window.location.host);
     CKEDITOR.replace('id_content', {
         on: {
             change: function () {

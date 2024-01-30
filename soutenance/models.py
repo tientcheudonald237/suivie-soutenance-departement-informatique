@@ -22,12 +22,12 @@ class CustomUserManager(BaseUserManager):
         )
         user.set_password(password)
         user.save(using=self._db)
-        return user
-
+        return user    
+    
     def create_superuser(self, matricule, last_name=None, first_name=None, gender=None, date_of_birth=None, address=None, phone_number=None, email=None, password=None, **extra_fields):
-        # Ensure all required fields are passed to create_user
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
         if extra_fields.get('is_superuser') is not True:
@@ -42,7 +42,8 @@ class CustomUserManager(BaseUserManager):
             address=address,
             phone_number=phone_number,
             email=email,
-            password=password
+            password=password,
+            **extra_fields
         )
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -57,24 +58,63 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     USERNAME_FIELD = 'matricule'
-    objects = CustomUserManager()  # Use your custom manager
+    objects = CustomUserManager() 
     
+class Teacher(CustomUser):
+    pass
+class Admin(CustomUser):
+   pass
+
+class Level(models.Model):
+    name = models.CharField(max_length=255)
+    
+class Sector(models.Model):
+    name = models.CharField(max_length=255)
+    
+class Student(CustomUser):
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+    sector = models.ForeignKey(Sector, on_delete=models.CASCADE)
+
+class Session(models.Model):
+    name = models.CharField(max_length=255)
+    year = models.IntegerField()
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)
+    sector = models.ForeignKey(Sector, on_delete=models.CASCADE)
+    max_groupe = models.IntegerField()
+    supervisor = models.ManyToManyField(Teacher, related_name='sessions_supervised')
+    uid = models.UUIDField(default=uuid.uuid4, editable=True, unique=True)
+    
+
+class Theme(models.Model):
+    numero = models.IntegerField()
+    name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE)
+    teachers = models.ManyToManyField(Teacher, through='TeacherTheme', through_fields=('theme', 'teacher'))
+
+    class Meta:
+        unique_together = ('numero', 'session')
+        
+
 class Folder(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=True, unique=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='folder_created')
     name = models.CharField(max_length=255)
-    parent_folder = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    parent_folder = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     shared = models.ManyToManyField(CustomUser, through='FolderSharing', through_fields=('folder', 'user'))
     is_favorite = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    timeLastUpdated = models.TimeField(auto_now=True)
+    of_a_theme = models.ForeignKey(Theme, null=True, on_delete=models.CASCADE)
+    of_a_session = models.ForeignKey(Session, null=True, on_delete=models.CASCADE)
     
 class Document(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=True, unique=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='documents_created')
     title = models.CharField(max_length=300)
-    datePosted = models.DateField(auto_now_add=True)
-    timePosted = models.TimeField(auto_now_add=True)
-    dateLastUpdated = models.DateField(auto_now=True)
-    timeLastUpdated = models.TimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     content = RichTextField(blank=True, null=True)
     type = models.CharField(max_length=10, choices=[('word', 'Word'), ('excel', 'Excel')], default='word')
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, null=True, blank=True)
@@ -92,6 +132,19 @@ class DocumentSharing(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     is_favorite = models.BooleanField(default=False)
+
+class TeacherTheme(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
+
+class ThemeStudent(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
+    
+class StudentSession(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    session = models.ForeignKey(Session, on_delete=models.CASCADE)
+    
 
 # Inutiles
 # class Notification(models.Model):
@@ -145,12 +198,6 @@ class DocumentSharing(models.Model):
 #     periode = models.CharField(max_length=255)
 #     description = models.TextField()
 
-# class Niveau(models.Model):
-#     nom = models.CharField(max_length=255)
-
-#     def __str__(self):
-#         return self.nom
-    
 # class Admin(models.Model):
 #     adresse_mail = models.EmailField(unique=True)
 #     nom_utilisateur = models.CharField(max_length=255, unique=True)
@@ -167,12 +214,6 @@ class DocumentSharing(models.Model):
 # class Etudiant(models.Model):
 #     user=models.OneToOneField(CustomUser,on_delete=models.CASCADE)
 #     id_niveau = models.ForeignKey(Niveau, on_delete=models.CASCADE)
-
-# class Session(models.Model):
-#     nom = models.CharField(max_length=255)
-#     annee = models.IntegerField()
-#     niveau = models.ForeignKey(Niveau, on_delete=models.CASCADE)
-#     max_groupe = models.IntegerField()
 
 # class Groupe(models.Model):
 #     id_session = models.ForeignKey(Session, on_delete=models.CASCADE)
