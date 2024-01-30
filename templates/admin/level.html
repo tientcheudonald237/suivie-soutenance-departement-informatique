@@ -8,9 +8,9 @@
       <div class="card">
         <div class="card-header d-flex justify-content-between">
             <h4>Niveau</h4>
-            <a href="#" class="btn btn-primary">
+            <!-- <a href="#" class="btn btn-primary">
                 <i class="fas fa-plus"></i>
-            </a>
+            </a> -->
         </div>
         <div class="card-body">
           <div class="table-responsive">
@@ -19,25 +19,13 @@
                 <tr>
                   <th>Numero</th>
                   <th>Nom</th>
-                  <th>Action</th>
                 </tr>
                </thead>
               <tbody>
                 {% for item in levels %}
                     <tr>
-                    <td>{{ item.id }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>
-                        <a class="btn btn-warning btn-action mr-1"
-                                                onclick="edit_level($iten.id);" title="Edit"><i
-                                                    class="fas fa-pencil-alt"></i></a>
-                                            <a class="btn btn-danger btn-action"
-                                                onclick="event.preventDefault();delete_level(item.id);"
-                                                title="Delete"><i class="fas fa-trash"></i></a>
-                                            <!-- <a href="#"
-                                                class="btn btn-success btn-action" title="view"><i
-                                                    class="fas fa-book-open"></i></a> -->
-                    </td>
+                      <td>{{ item.id }}</td>
+                      <td>{{ item.name }}</td>
                     </tr>
                 {% endfor %}
               </tbody>

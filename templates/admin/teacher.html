@@ -1,0 +1,143 @@
+{% extends "admin/base.html" %}
+
+{% block title %} Gestion de projet - Superviseur {% endblock %}
+
+{% block template %}
+<div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between">
+          <h4>Enseignant</h4>
+          <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#newTeacher">
+              <i class="fas fa-plus"></i>
+          </a>
+      </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover" id="save-stage" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>matricule</th>
+                  <th>Nom</th>
+                  <th>Prenom</th>
+                  <th>Sexe</th>
+                  <th>Date de naissance</th>
+                  <th>Telephone</th>
+                  <th>Email</th>
+                  <th>Addresse</th>
+                  <!-- <th>Action</th> -->
+                </tr>
+               </thead>
+              <tbody>
+                {% for item in teachers %}
+                    <tr>
+                      <td>
+                        <span class="badge {% if item.is_supervisor %} badge-success {% else %} badge-info {% endif %}">
+                          {{ item.matricule }}
+                        </span>
+                      </td>
+                      <td>{{ item.first_name }}</td>
+                      <td>{{ item.last_name }}</td>
+                      <td>{{ item.gender }}</td>
+                      <td>{{ item.date_of_birth }}</td>
+                      <td>{{ item.phone_number }}</td>
+                      <td>{{ item.email }}</td>
+                      <td>{{ item.address }}</td>
+                      <!-- <td>
+                      </td> -->
+                    </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block modal %}
+<div class="modal fade" id="newTeacher" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Ajouter un enseignant</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+            <form method="POST" action="{% url 'add_teacher' %}">
+              {% csrf_token %}
+              
+              <div class="form-group">
+                  <label>Matricule</label>
+                  <div class="input-group">
+                      <input type="text" class="form-control" placeholder="Matricule" name="matricule" required>
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Last Name</label>
+                  <div class="input-group">
+                      <input type="text" class="form-control" placeholder="Last Name" name="last_name" required>
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>First Name</label>
+                  <div class="input-group">
+                      <input type="text" class="form-control" placeholder="First Name" name="first_name" required>
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                <label>Email</label>
+                <div class="input-group">
+                    <input type="email" class="form-control" placeholder="Email" name="email" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                  <label>Gender</label>
+                  <div class="input-group">
+                      <select class="form-control" name="gender" required>
+                          <option value="M">Male</option>
+                          <option value="F">Female</option>
+                      </select>
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Date of Birth</label>
+                  <div class="input-group">
+                      <input type="date" class="form-control" name="date_of_birth" required>
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Address</label>
+                  <div class="input-group">
+                      <textarea class="form-control" placeholder="Address" name="address" required></textarea>
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Phone Number</label>
+                  <div class="input-group">
+                      <input type="text" class="form-control" placeholder="Phone Number" name="phone_number" required>
+                  </div>
+              </div>
+              
+           
+              
+              <button type="submit" class="btn btn-primary btn-block waves-effect">Creer</button>
+            </form>
+          </div>
+      </div>
+  </div>
+</div>
+{% endblock %}
+{% block script %}
+
+{% endblock %}

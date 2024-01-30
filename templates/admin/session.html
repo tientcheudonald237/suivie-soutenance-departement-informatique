@@ -1,14 +1,239 @@
 {% extends "admin/base.html" %}
+{% load static %}
 
-{% block title %} Gestion de projet - Accueil {% endblock %}
+{% block title %} Gestion de projet - Session {% endblock %}
+
+{% block style %}
+    <!-- <link rel="stylesheet" href="{% static 'assets/bundles/bootstrap-daterangepicker/daterangepicker.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/bundles/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css' %}"> -->
+    <link rel="stylesheet" href="{% static 'assets/bundles/select2/dist/css/select2.min.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'assets/bundles/jquery-selectric/selectric.css' %}"> -->
+    <!-- <link rel="stylesheet" href="{% static 'assets/bundles/bootstrap-timepicker/css/bootstrap-timepicker.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/bundles/bootstrap-tagsinput/dist/bootstrap-tagsinput.css' %}"> --> 
+{% endblock %}
+
+{% block navbars %}
+    <li>
+        <a href="#" class="nav-link" title="Creer un theme" style="color: black;"
+            data-toggle="modal" data-target="#createTheme">
+            <i class="material-icons">create</i>
+        </a>
+    </li>
+    <li>
+        <a href="#" class="nav-link" title="Ajouter un superviseur" style="color: black;"
+            data-toggle="modal" data-target="#addSupervisor">
+            <i class="material-icons">people</i>
+        </a>
+    </li>
+{% endblock %}
 
 {% block template %}
+<div class="row">
+    <div class="col-12 col-md-12 col-lg-12">
+      <div class="card">
+        <div class="card-header">
+          <h4>Theme</h4>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover" id="save-stage" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>Groupe</th>
+                  <th>Nom</th>
+                  <th>Description</th>
+                  <th>Encardreurs</th>
+                  <th>Action</th>
+                </tr>
+               </thead>
+              <tbody>
+                {% for item in themes %}
+                    <tr>
+                        <td>{{ item.numero }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.description }}</td>
+                        <td>
+                            {% for teacher_theme in item.teachertheme_set.all %}
+                                <span class="badge badge-info">{{ teacher_theme.teacher.matricule }} {{ teacher_theme.teacher.first_name }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <a href="#" data-toggle="dropdown"
+                                    class="btn btn-warning dropdown-toggle">Options</a>
+                                <div class="dropdown-menu">
+                                    <a href="#" onclick=""
+                                        class="dropdown-item has-icon"><i class="far fa-edit"></i>
+                                        Edit</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="#"
+                                        onclick="event.preventDefault();"
+                                        class="dropdown-item has-icon text-danger"><i
+                                            class="far fa-trash-alt"></i>
+                                        Delete</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <h4>Superviseur</h4>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="save-stage" style="width:100%;">
+                <thead>
+                  <tr>
+                    <th>Matricule</th>
+                    <th>Nom</th>
+                    <th>Action</th>
+                  </tr>
+                 </thead>
+                <tbody>
+                  {% for item in supervisors %}
+                      <tr>
+                          <td>{{ item.matricule }}</td>
+                          <td>{{ item.first_name }}</td>
+                          <td>  
+                                <a href="#" onclick="event.preventDefault();" class="btn btn-danger">
+                                    <i class="far fa-trash-alt"></i>
+                                </a>
+                          </td>
+                      </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6 col-lg-6">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between">
+            <h4>Etudiant</h4>
+            <a href="#" class="btn btn-primary" data-toggle="modal" data-target="#addStudentSession">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover" id="save-stage" style="width:100%;">
+                <thead>
+                  <tr>
+                    <th>matricule</th>
+                    <th>Nom</th>
+                    <th>Prenom</th>
+                    <th>Action</th>
+                  </tr>
+                 </thead>
+                <tbody>
+                  {% for item in students_in_session %}
+                      <tr>
+                        <td>{{ item.matricule }}</td>
+                        <td>{{ item.first_name }}</td>
+                        <td>{{ item.last_name }}</td>
+                        <td>  
+                            <a href="#" onclick="event.preventDefault();" class="btn btn-danger">
+                                <i class="far fa-trash-alt"></i>
+                            </a>
+                      </td>
+                      </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
-
+{% block modal %}
+    <div class="modal fade" id="createTheme" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter un theme</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'create_theme' %}" >
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Numero</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" placeholder="Numero theme" name="numero" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Nom</label>
+                            <div class="input-group">
+                                <textarea class="form-control" name="name" required></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <div class="input-group">
+                                <textarea class="form-control" name="description" ></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Encardreurs</label> <br>
+                            <select class="form-control select2" multiple="" name="teachers" style="width: 100%;">
+                              {% for item in teachers %}
+                                <option value="{{ item.id }}">{{ item.matricule }} {{ item.first_name }}</option>
+                              {% endfor %}
+                            </select>
+                        </div>
+                        <input type="hidden" name="id_session" value="{{ session.id }}">
+                        <button type="submit" class="btn btn-primary btn-block waves-effect">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addSupervisor" tabindex="-1" role="dialog" aria-labelledby="formModal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter des superviseurs</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{% url 'add_supervisor_session' %}" >
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Encardreurs</label> <br>
+                            <select class="form-control select2" multiple="" name="teachers" style="width: 100%;" required>
+                              {% for item in no_supervisors %}
+                                <option value="{{ item.id }}">{{ item.matricule }} {{ item.first_name }}</option>
+                              {% endfor %}
+                            </select>
+                        </div>
+                        <input type="hidden" name="id_session" value="{{ session.id }}">
+                        <button type="submit" class="btn btn-primary btn-block waves-effect">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block script %}
-<script>
+    <script src="{% static 'assets/bundles/select2/dist/js/select2.full.min.js' %}"></script>
+    <!-- <script src="{% static 'assets/bundles/jquery-selectric/jquery.selectric.min.js' %}"></script> -->
+    <script src="{% static 'assets/js/page/forms-advanced-forms.js' %}"></script>
 
-</script>
 {% endblock %}

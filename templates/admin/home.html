@@ -1,31 +1,39 @@
 {% extends "admin/base.html" %}
 
-{% block title %} Gestion de projet - Filiere {% endblock %}
+{% block title %} Gestion de projet - Acceuil {% endblock %}
 
 {% block template %}
 <div class="row">
     <div class="col-12">
       <div class="card">
         <div class="card-header d-flex justify-content-between">
-          <h4>Filiere</h4>
-          <!-- <a href="#" class="btn btn-primary">
-              <i class="fas fa-plus"></i>
-          </a> -->
+          <h4>Session</h4>
       </div>
         <div class="card-body">
           <div class="table-responsive">
             <table class="table table-striped table-hover" id="save-stage" style="width:100%;">
               <thead>
                 <tr>
-                  <th>Numero</th>
+                  <th>Annee</th>
                   <th>Nom</th>
+                  <th>Niveau</th>
+                  <th>Filiere</th>
+                  <th>Max par groupe</th>
+                  <th>action</th>
+
                 </tr>
                </thead>
               <tbody>
-                {% for item in sectors %}
+                {% for item in sessions %}
                     <tr>
-                      <td>{{ item.id }}</td>
+                      <td>{{ item.year }}</td>
                       <td>{{ item.name }}</td>
+                      <td>{{ item.level.name }}</td>
+                      <td>{{ item.sector.name }}</td>
+                      <td>{{ item.max_groupe }}</td>
+                      <td>
+                        <a href="{% url 'session' uid=item.uid %}" class="btn btn-primary">Ouvrir</a>
+                      </td>
                     </tr>
                 {% endfor %}
               </tbody>

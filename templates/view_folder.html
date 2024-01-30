@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block navbars %}
-    {% if active_tab == 'my_folder' %}
+    {% if active_action == 'my_folder' %}
         <li>
             <a href="#" class="nav-link" title="Supprimer le dossier" style="color: black;"
                 onclick="delete_folder('{{ folder.id }}', '{{ folder.parent_folder.uid }}')">

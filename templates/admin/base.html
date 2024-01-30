@@ -7,16 +7,17 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
     <title>{% block title %}{% endblock %}</title>
     <!-- General CSS Files -->
+
     <link rel="stylesheet" href="{% static 'assets/css/app.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/bundles/datatables/datatables.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css' %}">
+    {% block style %}{% endblock %}
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/components.css' %}">
 
     <!-- Custom style CSS -->
     <link rel="stylesheet" href="{% static 'assets/css/custom.css' %}">
     <link rel='shortcut icon' type='image/x-icon' href="{% static 'assets/img/logo.svg' %}" />
-    {% block style %}{% endblock %}
 </head>
 
 <body>
@@ -66,7 +67,7 @@
             <div class="main-sidebar sidebar-style-2">
                 <aside id="sidebar-wrapper">
                     <div class="sidebar-brand">
-                        <a href="{% url 'index' %}"> <img alt="image" src="{% static 'assets/img/logo.png' %}"
+                        <a href="{% url 'home' %}"> <img alt="image" src="{% static 'assets/img/logo.png' %}"
                                 class="header-logo" /> <span class="logo-name">T3MRD2</span></a>
                     </div>
                     <ul class="sidebar-menu">
@@ -75,8 +76,22 @@
                                 data-toggle="modal" data-target="#newSession"><i
                                     data-feather="clipboard"></i><span>Nouvelle session</span></a></li>
                         <li class="menu-header">REPERTOIRE</li>
-                        <li {% if request.path == "/" %} class="active" {% endif %}><a class="nav-link"
-                                href="{% url 'index' %}"><i data-feather="slack"></i><span>Session</span></a>
+                        <li class="dropdown {% if '/home' in request.path or '/session' in request.path %}active{% endif %}">
+                            <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="slack"></i><span>Session</span></a>
+                            <ul class="dropdown-menu">
+                                <li {% if request.path == '/home' %}class="active"{% endif %}>
+                                    <a class="nav-link" href="{% url 'home' %}">
+                                        <span>Liste</span>
+                                    </a>
+                                </li>
+                                {% for item in sessions %}
+                                    <li {% if session.uid == item.uid %}class="active"{% endif %}>
+                                        <a class="nav-link" href="{% url 'session' uid=item.uid %}">
+                                            <span>{{ item.name|slice:":16" }}{% if item.name|length > 16 %}...{% endif %}</span>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
                         </li>
                         <li {% if request.path == "/sector" %} class="active" {% endif %}><a class="nav-link"
                             href="{% url 'sector' %}"><i data-feather="code"></i><span>Filiere</span></a>
@@ -84,8 +99,11 @@
                         <li {% if request.path == "/level" %} class="active" {% endif %}><a class="nav-link"
                             href="{% url 'level' %}"><i data-feather="trending-up"></i><span>Niveau</span></a>
                         </li>
-                        <li {% if request.path == "/supervisor" %} class="active" {% endif %}><a class="nav-link"
-                            href="{% url 'supervisor' %}"><i data-feather="user"></i><span>Superviseur</span></a>
+                        <li {% if request.path == "/teacher" %} class="active" {% endif %}><a class="nav-link"
+                            href="{% url 'teacher' %}"><i data-feather="user"></i><span>Enseignant</span></a>
+                        </li>
+                        <li {% if request.path == "/student" %} class="active" {% endif %}><a class="nav-link"
+                            href="{% url 'student' %}"><i data-feather="award"></i><span>Etudiant</span></a>
                         </li>
                     </ul>
                 </aside>
@@ -145,7 +163,7 @@
                         <div class="form-group">
                             <label for="name">Année</label>
                             <div class="input-group">
-                                <input type="number" class="form-control" id="year" name="year" required>
+                                <input type="number" class="form-control" id="year" name="year" min="1900" step="1" required>
                             </div>
                         </div>
                         <div class="form-group">
@@ -195,7 +213,13 @@
     <script src="{% static 'assets/js/page/datatables.js' %}"></script>
         <!-- Template JS File -->
     <script src="{% static 'assets/js/scripts.js' %}"></script>
-
+    <script>
+        var anneeInput = document.getElementById('year');
+        var dateActuelle = new Date();
+        var anneeMax = dateActuelle.getFullYear();
+        anneeInput.max = anneeMax;
+        anneeInput.value = anneeMax;
+      </script>
     {% block script %}
     {% endblock %}
 </body>
