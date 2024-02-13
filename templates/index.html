@@ -3,30 +3,32 @@
 {% block title %} Gestion de projet - Accueil {% endblock %}
 
 {% block template %}
-        {% for session_theme in session_themes %}
-        <h1 class="text-info">{{ session_theme.session.name }}</h2>
-        <div class="row">
-            {% for theme in session_theme.themes %}
-                <div class="col-12 col-md-4 col-lg-4">  
-                        <div class="card">
-                            <div class="card-header">
-                                <h4>{{ theme.name }}</h4>
-                            </div>
-                            <div class="card-body">
-                                <p>{{ theme.description }}</p>
-                                <a class="btn btn-block btn-info" href="{% url 'student_validate_theme' user_id=request.user.id theme_id=theme.id %}">
-                                    <i class="fas fa-check"></i>
-                                </a>
-                            </div>
-                        </div>
-                </div>   
-            {% endfor %}
-        </div>
+{% for session_theme in session_themes %}
+{% if session_theme.has_theme == False %}
+<h1 class="text-info">{{ session_theme.session.name }}</h2>
+    <div class="row">
+        {% for theme in session_theme.themes %}
+            <div class="col-12 col-md-4 col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>{{ theme.name }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ theme.description }}</p>
+                        <a class="btn btn-block btn-info"
+                            href="{% url 'student_validate_theme' user_id=request.user.id theme_id=theme.id %}">
+                            <i class="fas fa-check"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
-{% endblock %}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endblock %}
+    {% block script %}
+    <script>
 
-{% block script %}
-<script>
-
-</script>
-{% endblock %}
+    </script>
+    {% endblock %}

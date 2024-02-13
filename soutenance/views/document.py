@@ -34,7 +34,6 @@ def create_document(request):
             
         else : 
             messages.warning(request, 'Erreur Utilisateur non connecté') 
-             
     return redirect('index')
 
 @csrf_exempt
@@ -50,7 +49,7 @@ def view_document(request,uid):
     
     user_documents = Document.objects.filter(user=request.user, folder__isnull=True)
     documentForm = DocumentForm(initial={'content': document.content})
- 
+
     read_only_mode = request.GET.get('read-only', False) == 'true'
     
     domain = request.META['HTTP_HOST']

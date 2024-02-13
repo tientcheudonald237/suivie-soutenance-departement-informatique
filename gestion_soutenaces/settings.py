@@ -16,7 +16,7 @@ import socket
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-print(socket.gethostbyname(socket.gethostname()))
+# print(socket.gethostbyname(socket.gethostname()))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-5u)7gt8f8c+-2mb^)ow9xzkp39eusfi3qg6i3umte84h_$r=@#
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.1.1',
+    # '127.0.1.1',
 ]
 
 STATICFILES_DIRS = [BASE_DIR / 'static']

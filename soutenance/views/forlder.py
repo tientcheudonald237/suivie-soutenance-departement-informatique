@@ -29,15 +29,15 @@ def create_folder(request):
         folder_url = reverse('view_folder', args=[folder.uid])
         return redirect(folder_url)
         
-       
     return redirect('index')
 
 @csrf_exempt
 @login_required(login_url='login')
 def delete_folder(request, id):
     try:
-        folder = Folder.objects.get(id=id)
-        folder.delete()
+        #folder = Folder.objects.get(id=id)
+        delete_folder_and_children(id)
+        #folder.delete()
         return HttpResponse(status=200)
     except Folder.DoesNotExist:
         return JsonResponse({'message': 'Folder not found.'}, status=404)
@@ -114,14 +114,12 @@ def view_folder(request, uid):
     
     return render(request, 'view_folder.html', context)
 
-
 @csrf_exempt
 def add_colaborateur_folder(request, id):
     folder = get_object_or_404(Folder, id=id)
     
     if request.method == 'POST':
         matricule = request.POST.get('matricule')
-
         collaborateur = CustomUser.objects.filter(matricule=matricule).first()
         if collaborateur.id != folder.user_id :
             if collaborateur:

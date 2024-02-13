@@ -9,6 +9,7 @@ bcrypt==3.2.0
 blinker==1.4
 Brlapi==0.8.3
 certifi==2020.6.20
+channels==3.0.4
 chardet==4.0.0
 charset-normalizer==3.2.0
 click==8.0.3
@@ -19,7 +20,7 @@ cupshelpers==1.0
 dbus-python==1.2.18
 defer==1.0.6
 distro==1.7.0
-distro-info==1.1+ubuntu0.1
+distro-info
 Django==4.2.7
 django-ckeditor==6.7.0
 django-crispy-forms==2.1
@@ -35,7 +36,7 @@ httplib2==0.20.2
 idna==3.3
 importlib-metadata==4.6.4
 jeepney==0.7.1
-kazam==1.4.5
+kazam
 keyring==23.5.0
 language-selector==0.1
 launchpadlib==1.10.16

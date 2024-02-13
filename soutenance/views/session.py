@@ -1,6 +1,9 @@
-from django.shortcuts import redirect
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from ..models import Folder, Level, Sector, Session, Student, StudentSession, Teacher
+
+from soutenance.views.services import delete_folder_and_children
+from ..models import Document, DocumentSharing, Folder, FolderSharing, Level, Sector, Session, Student, StudentSession, Teacher, TeacherTheme, Theme, ThemeStudent
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -60,3 +63,28 @@ def add_supervisor_session(request):
             messages.error(request, 'Un enseignant spécifié n\'existe pas.')
 
     return redirect('session')
+
+def delete_session(request, uid):
+    session = get_object_or_404(Session, uid=uid)
+
+    # Supprimer les dossiers liés aux thèmes
+    for theme in Theme.objects.filter(session=session):
+        folder = Folder.objects.get(of_a_theme=theme)
+        delete_folder_and_children(folder.id)
+
+        # Supprimer les relations TeacherTheme
+        TeacherTheme.objects.filter(theme=theme).delete()
+
+        # Supprimer les relations ThemeStudent
+        ThemeStudent.objects.filter(theme=theme).delete()
+        
+    # Supprimer les thèmes
+    Theme.objects.filter(session=session).delete()
+
+    # Supprimer les sessions d'étudiants liées
+    StudentSession.objects.filter(session=session).delete()
+
+    # Enfin, supprimer la session
+    session.delete()
+
+    return JsonResponse({'message': 'Session deleted successfully'}, status=200)

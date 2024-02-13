@@ -59,18 +59,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     USERNAME_FIELD = 'matricule'
     objects = CustomUserManager() 
-    
+
 class Teacher(CustomUser):
     pass
+
 class Admin(CustomUser):
    pass
 
 class Level(models.Model):
     name = models.CharField(max_length=255)
-    
+
 class Sector(models.Model):
     name = models.CharField(max_length=255)
-    
+
 class Student(CustomUser):
     level = models.ForeignKey(Level, on_delete=models.CASCADE)
     sector = models.ForeignKey(Sector, on_delete=models.CASCADE)
@@ -83,7 +84,6 @@ class Session(models.Model):
     max_groupe = models.IntegerField()
     supervisor = models.ManyToManyField(Teacher, related_name='sessions_supervised')
     uid = models.UUIDField(default=uuid.uuid4, editable=True, unique=True)
-    
 
 class Theme(models.Model):
     numero = models.IntegerField()
@@ -94,7 +94,6 @@ class Theme(models.Model):
 
     class Meta:
         unique_together = ('numero', 'session')
-        
 
 class Folder(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=True, unique=True)
@@ -108,7 +107,7 @@ class Folder(models.Model):
     timeLastUpdated = models.TimeField(auto_now=True)
     of_a_theme = models.ForeignKey(Theme, null=True, on_delete=models.CASCADE)
     of_a_session = models.ForeignKey(Session, null=True, on_delete=models.CASCADE)
-    
+
 class Document(models.Model):
     uid = models.UUIDField(default=uuid.uuid4, editable=True, unique=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='documents_created')
@@ -120,12 +119,13 @@ class Document(models.Model):
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, null=True, blank=True)
     shared = models.ManyToManyField(CustomUser, through='DocumentSharing', through_fields=('document', 'user'))
     is_favorite = models.BooleanField(default=False)
-    
+
 class FolderSharing(models.Model):
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     is_favorite = models.BooleanField(default=False)
+    is_from_student = models.BooleanField(default=False)
 
 class DocumentSharing(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
@@ -140,11 +140,10 @@ class TeacherTheme(models.Model):
 class ThemeStudent(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
-    
+
 class StudentSession(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
-    
 
 # Inutiles
 # class Notification(models.Model):
