@@ -28,7 +28,7 @@ def create_theme(request):
                 teacher = Teacher.objects.get(id=teacher_id)
                 TeacherTheme.objects.create(theme=theme, teacher=teacher)
 
-            folder = Folder(name=f"Groupe{numero}: {name}", user=request.user, of_a_theme=theme)
+            folder = Folder(name=name, user=request.user, of_a_theme=theme)
             parent_folder = Folder.objects.get(of_a_session=session)
             if parent_folder :
                 folder.parent_folder = parent_folder
@@ -49,6 +49,6 @@ def student_validate_theme(request, user_id, theme_id):
     
     ThemeStudent.objects.create(student=student, theme=theme)
     theme_folder = Folder.objects.get(of_a_theme=theme)
-    FolderSharing.objects.create(folder=theme_folder, user=student, accepted=True)
+    FolderSharing.objects.create(folder=theme_folder, user=student, accepted=True, is_from_student=True)
     messages.success(request, 'Le choix de votre theme est valider !!!')
-    return index(request)       
+    return redirect('index')      

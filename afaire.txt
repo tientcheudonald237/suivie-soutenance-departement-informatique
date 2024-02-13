@@ -1,0 +1,9 @@
+Dans la partie admin
+    * Par rapport a une session
+        -Modifier et supprimer un theme
+        -Supprimer un superviseur
+        -Ajouter et supprimer un etudiant
+        -EN ajoutant et supprimant un superviseur, partager et retirer les droits d'acces sur le FolderSharing, en ajoutant un attribut is_from_supervisor
+
+Dans la partie interface enseignant pour un simple user
+    * Gerer l'affichage des documents pour un enseignant par rapport a un thme qu'il encadre et par rapport a une session qu'il suppervise

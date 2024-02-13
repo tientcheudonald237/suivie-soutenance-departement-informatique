@@ -39,13 +39,23 @@ urlpatterns = [
     #SESSION
     path('create_session', session.create_session, name='create_session'),
     path('add_supervisor_session', session.add_supervisor_session, name='add_supervisor_session'),
+    path('delete_session/<uuid:uid>/', session.delete_session, name='delete_session'),
     
     #TEACHER
     path('add_teacher', teacher.add_teacher, name='add_teacher'),
-    
+    path('delete_teacher/<int:teacher_id>/', teacher.delete_teacher, name='delete_teacher'),
+    path('update_teacher/<int:teacher_id>/', teacher.update_teacher, name='update_teacher'),
+    path('get_teacher/<int:teacher_id>/', teacher.get_teacher, name='get_teacher'),
+    path('upload_teachers', teacher.upload_teachers, name='upload_teachers'),
+
     #STUDENT
     path('add_student', student.add_student, name='add_student'),
-    
+    path('delete_student/<int:student_id>/', student.delete_student, name='delete_student'),
+    path('update_student/<int:student_id>/', student.update_student, name='update_student'),
+    path('get_student/<int:student_id>/', student.get_student, name='get_student'),
+    path('upload_students', student.upload_students, name='upload_students'),
+
+
     #THEME
     path('create_theme', theme.create_theme, name='create_theme'),
     path('student_validate_theme/<int:user_id>-<int:theme_id>/', theme.student_validate_theme, name='student_validate_theme'),

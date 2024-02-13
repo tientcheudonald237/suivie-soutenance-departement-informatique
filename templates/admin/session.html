@@ -13,6 +13,11 @@
 {% endblock %}
 
 {% block navbars %}
+  <li>
+    <a href="#" onclick="delete_session('{{ session.uid }}')" class="nav-link" title="supprimer la session" style="color: black;">
+        <i class="material-icons">delete</i>
+    </a>
+  </li>
     <li>
         <a href="#" class="nav-link" title="Creer un theme" style="color: black;"
             data-toggle="modal" data-target="#createTheme">
@@ -45,7 +50,7 @@
                   <th>Encardreurs</th>
                   <th>Action</th>
                 </tr>
-               </thead>
+              </thead>
               <tbody>
                 {% for item in themes %}
                     <tr>
@@ -96,7 +101,7 @@
                     <th>Nom</th>
                     <th>Action</th>
                   </tr>
-                 </thead>
+                </thead>
                 <tbody>
                   {% for item in supervisors %}
                       <tr>
@@ -133,7 +138,7 @@
                     <th>Prenom</th>
                     <th>Action</th>
                   </tr>
-                 </thead>
+                </thead>
                 <tbody>
                   {% for item in students_in_session %}
                       <tr>
@@ -235,5 +240,38 @@
     <script src="{% static 'assets/bundles/select2/dist/js/select2.full.min.js' %}"></script>
     <!-- <script src="{% static 'assets/bundles/jquery-selectric/jquery.selectric.min.js' %}"></script> -->
     <script src="{% static 'assets/js/page/forms-advanced-forms.js' %}"></script>
-
+    <script>
+      function delete_session(uid) {
+        swal({
+            title: 'Suppression',
+            text: 'Voulez vous vraiment supprimer cette session ?? Une action retour ne seras plus possible !!!',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                var xhr = new XMLHttpRequest();
+                var url = "/delete_session/" + uid + "/";
+                xhr.open('DELETE', url);
+                xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        console.log(xhr.status)
+                        swal('Suppression réussie', {
+                            icon: 'success',
+                        });
+                        setTimeout(function() {
+                            window.location.href = '/home';
+                        }, 1000);
+                    } else {
+                        swal('Une erreur s\'est produite', {
+                            icon: 'error',
+                        });
+                    }
+                };
+                xhr.send();
+            }
+        });
+      }
+    </script>
 {% endblock %}
