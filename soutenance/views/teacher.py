@@ -7,8 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
-from rest_framework.decorators import api_view
-from django.core.serializers import serialize
+from rest_framework.decorators import api_view 
+# from django.core.serializers import serialize
 from ..serializers import TeacherSerializer
 from django.http import JsonResponse
 from rest_framework.response import Response
@@ -49,12 +49,10 @@ def add_teacher(request):
 
     return redirect('teacher')  
 
-
 def delete_teacher(request, teacher_id):
     teacher = get_object_or_404(Teacher, id=teacher_id)
     teacher.delete()
     return JsonResponse({'message': 'Teacher deleted successfully'}, status=200)
-
 
 def update_teacher(request, teacher_id):
     teacher = get_object_or_404(Teacher, id=teacher_id)
@@ -70,7 +68,6 @@ def update_teacher(request, teacher_id):
         messages.success(request, 'Informations de l\'enseignant modifier avec succes.')
     return redirect('teacher')
 
-
 @api_view(['GET'])
 def get_teacher(request, teacher_id):
     try:
@@ -82,7 +79,6 @@ def get_teacher(request, teacher_id):
     except Exception as e:
         print(e)
         return JsonResponse({'data': 'off'}, status=500)
-
 
 def upload_teachers(request):
     if request.method == 'POST':
@@ -103,7 +99,6 @@ def upload_teachers(request):
             return redirect('teacher')
 
     return redirect('teacher')
-
 
 def process_uploaded_file(file):
     try:

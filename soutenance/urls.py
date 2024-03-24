@@ -39,6 +39,9 @@ urlpatterns = [
     #SESSION
     path('create_session', session.create_session, name='create_session'),
     path('add_supervisor_session', session.add_supervisor_session, name='add_supervisor_session'),
+    path('add_student_session', session.add_student_session, name='add_student_session'),
+    path('delete_student_session/<int:session_id>-<int:student_id>/', session.delete_student_session, name='delete_student_session'),
+    path('delete_supervisor_session/<int:session_id>-<int:teacher_id>/', session.delete_supervisor_session, name='delete_supervisor_session'),
     path('delete_session/<uuid:uid>/', session.delete_session, name='delete_session'),
     
     #TEACHER
@@ -59,7 +62,10 @@ urlpatterns = [
     #THEME
     path('create_theme', theme.create_theme, name='create_theme'),
     path('student_validate_theme/<int:user_id>-<int:theme_id>/', theme.student_validate_theme, name='student_validate_theme'),
-    
+    path('delete_theme/<int:theme_id>/', theme.delete_theme, name='delete_theme'),
+    path('update_theme/<int:theme_id>/', theme.update_theme, name='update_theme'),
+    path('get_theme/<int:theme_id>/', theme.get_theme, name='get_theme'),
+
     #VIEWS
     path('', views.index, name='index'),
     path('notification', views.notification, name='notification'),

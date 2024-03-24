@@ -1,9 +1,12 @@
-Dans la partie admin
-    * Par rapport a une session
-        -Modifier et supprimer un theme
-        -Supprimer un superviseur
-        -Ajouter et supprimer un etudiant
-        -EN ajoutant et supprimant un superviseur, partager et retirer les droits d'acces sur le FolderSharing, en ajoutant un attribut is_from_supervisor
+faire le detail lorsque on clique sur un theme dans une session : 
+    On doit pouvoir voir :
+        -les etudiants qui travailles sur le themes
+        -Les dossiers du projet
+        -Les informations propre au theme
+        -Les informations sur le/les encadreur(s)
 
-Dans la partie interface enseignant pour un simple user
-    * Gerer l'affichage des documents pour un enseignant par rapport a un thme qu'il encadre et par rapport a une session qu'il suppervise
+04 ieme itteration : 
+    -Integerer un systeme de notification sur certaines actions de facon general et 
+        garder et afficihers les informations concernant les dates de modification des documents
+        pour certaines tracabilites
+    Donc on peut dire  systeme de notification et de travabilite 

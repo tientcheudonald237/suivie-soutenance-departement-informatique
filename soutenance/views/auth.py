@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from ..models import  Admin
 from django.urls import reverse
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed 
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
