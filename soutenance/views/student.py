@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, redirect
 from ..models import  Student, Level,  Sector
 from django.contrib import messages
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password 
 from rest_framework.decorators import api_view
 from django.core.serializers import serialize
 from ..serializers import StudentSerializer
@@ -55,7 +55,6 @@ def delete_student(request, student_id):
     student.delete()
     return JsonResponse({'message': 'Student deleted successfully'}, status=200)
 
-
 def update_student(request, student_id):
     student = get_object_or_404(Student, id=student_id)
     if request.method == 'POST':
@@ -69,7 +68,6 @@ def update_student(request, student_id):
         student.save()
         messages.success(request, 'Informations de l\'etudiant modifier avec succes.')
     return redirect('student')
-
 
 @api_view(['GET'])
 def get_student(request, student_id):

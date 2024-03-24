@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-import socket 
+# import socket 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +26,9 @@ SECRET_KEY = 'django-insecure-5u)7gt8f8c+-2mb^)ow9xzkp39eusfi3qg6i3umte84h_$r=@#
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# hostname = socket.gethostname()
+# ip_adress = socket.gethostbyname(hostname)
+# print(ip_adress)
 
 ALLOWED_HOSTS = [
     # '127.0.1.1',

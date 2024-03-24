@@ -67,7 +67,7 @@
                     {% block navbars %}{% endblock %}
                     <li class="dropdown"><a href="#" data-toggle="dropdown"
                             class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image"
-                                src="{% static 'assets/img/user.jpg' %}" class="user-img-radious-style"> <span
+                                src="{% static 'assets/img/user.jpeg' %}" class="user-img-radious-style"> <span
                                 class="d-sm-none d-lg-inline-block"></span></a>
                         <div class="dropdown-menu dropdown-menu-right pullDown">
                             <div class="dropdown-title">{{ user.matricule }} {{ user.first_name }} {{ user.last_name }}</div>
@@ -90,7 +90,7 @@
                 <aside id="sidebar-wrapper">
                     <div class="sidebar-brand">
                         <a {% if request.user.is_superuser %} href="{% url 'home' %}" {% else %} href="{% url 'index' %}" {% endif %}> <img alt="image" src="{% static 'assets/img/logo.png' %}"
-                                class="header-logo" /> <span class="logo-name">T3MRD2</span></a>
+                                class="header-logo" /> <span class="logo-name">GPSU</span></a>
                     </div>
                     <ul class="sidebar-menu">
                         {% if user.is_authenticated %}
@@ -179,7 +179,7 @@
             </div>
             <footer class="main-footer">
                 <div class="footer-left">
-                    <a href="#">Donald</a></a>
+                    <a href="#">GPSU</a></a>
                 </div>
                 <div class="footer-right">
                 </div>
