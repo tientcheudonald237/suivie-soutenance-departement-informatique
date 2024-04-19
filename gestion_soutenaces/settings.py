@@ -31,7 +31,7 @@ DEBUG = True
 # print(ip_adress)
 
 ALLOWED_HOSTS = [
-    '*',
+    '*'
 ]
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
