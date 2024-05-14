@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-5u)7gt8f8c+-2mb^)ow9xzkp39eusfi3qg6i3umte84h_$r=@#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 # hostname = socket.gethostname()
 # ip_adress = socket.gethostbyname(hostname)
 # print(ip_adress)
@@ -84,12 +84,12 @@ ASGI_APPLICATION = 'gestion_soutenaces.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # Password validation
@@ -131,8 +131,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
-MEDIA_URL = 'images/'
+STATIC_URL = '/static/'
+MEDIA_URL = '/images/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 AUTH_USER_MODEL='soutenance.CustomUser'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -146,12 +146,12 @@ MEDIA_ROOT = BASE_DIR / 'images'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CKEDITOR_CONFIGS = {
-    'default': {
-        'height': 700,
-        'toolbar': 'full',
-    }
-}
+# CKEDITOR_CONFIGS = {
+#     'default': {
+#         'height': 700,
+#         'toolbar': 'full',
+#     }
+# }
 
 CHANNEL_LAYERS = {
     'default': {
