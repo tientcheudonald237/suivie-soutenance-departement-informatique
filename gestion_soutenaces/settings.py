@@ -159,6 +159,9 @@ CKEDITOR_CONFIGS = {
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': "channels.layers.InMemoryChannelLayer",
+        'CONFIG': {
+            "hosts": [('216.24.57.4', 443)],
+        },
     }
 }
 
