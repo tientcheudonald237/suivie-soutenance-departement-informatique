@@ -45,4 +45,3 @@ class DocConsumer(WebsocketConsumer):
 			'result':self.content
 		}))
     
-    	
