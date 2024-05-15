@@ -149,12 +149,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "images/")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# CKEDITOR_CONFIGS = {
-#     'default': {
-#         'height': 700,
-#         'toolbar': 'full',
-#     }
-# }
+CKEDITOR_CONFIGS = {
+    'default': {
+        'height': 700,
+        'toolbar': 'full',
+    }
+}
 
 CHANNEL_LAYERS = {
     'default': {
