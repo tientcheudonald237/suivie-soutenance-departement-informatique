@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 # import socket 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-5u)7gt8f8c+-2mb^)ow9xzkp39eusfi3qg6i3umte84h_$r=@#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 # hostname = socket.gethostname()
 # ip_adress = socket.gethostbyname(hostname)
 # print(ip_adress)
@@ -34,7 +35,7 @@ ALLOWED_HOSTS = [
     '*'
 ]
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATICFILES_DIRS = [BASE_DIR / 'static']
 # Application definition
 
 INSTALLED_APPS = [
@@ -133,10 +134,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = 'images/'
-STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static")    
+]
 AUTH_USER_MODEL='soutenance.CustomUser'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_ROOT = BASE_DIR / 'images'
+MEDIA_ROOT = os.path.join(BASE_DIR, "images/")   
 
 
 
