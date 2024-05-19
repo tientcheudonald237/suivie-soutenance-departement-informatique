@@ -247,6 +247,7 @@
     const socket = new WebSocket('ws://'+window.location.host+'/ws/livec/public_room/'); 
     
     console.log("--------------------------------------------"+window.location.host);
+    console.log(socket)
     CKEDITOR.replace('id_content', {
         on: {
             change: function () {
