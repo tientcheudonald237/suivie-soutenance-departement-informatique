@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 # import socket 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -34,7 +35,7 @@ ALLOWED_HOSTS = [
     '*'
 ]
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATICFILES_DIRS = [BASE_DIR / 'static']
 # Application definition
 
 INSTALLED_APPS = [
@@ -84,12 +85,12 @@ ASGI_APPLICATION = 'gestion_soutenaces.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # Password validation
@@ -133,10 +134,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = 'images/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static")    
+]
 AUTH_USER_MODEL='soutenance.CustomUser'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_ROOT = BASE_DIR / 'images'
+MEDIA_ROOT = os.path.join(BASE_DIR, "images/")   
 
 
 
@@ -156,6 +159,9 @@ CKEDITOR_CONFIGS = {
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': "channels.layers.InMemoryChannelLayer",
+        'CONFIG': {
+            "hosts": [('216.24.57.4', 443)],
+        },
     }
 }
 
