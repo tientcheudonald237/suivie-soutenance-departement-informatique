@@ -246,7 +246,7 @@
     var documentId = document.getElementById('id_document').value;
 
     document.addEventListener('DOMContentLoaded', function() {
-    const sseUrl = '/sse-updates/'+ documentId+'/';
+    const sseUrl = 'https://suivie-soutenance-departement.onrender.com/sse-updates/'+ documentId+'/';
     const eventSource = new EventSource(sseUrl);
 
     console.log("--------------------------------------------" + window.location.host);
