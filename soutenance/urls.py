@@ -11,6 +11,8 @@ urlpatterns = [
     path('register_post', auth.register_post, name='register_post'),
     
     #DOCUMENT
+    path('sse-updates/<int:id>/', views.sse_updates, name='sse_updates'),
+
     path('auto_save/<int:id>/', document.auto_save, name='auto_save'),
     path('create_document', document.create_document, name='create_document'),
     path('documents/<uuid:uid>/', document.view_document, name='view_document'),
