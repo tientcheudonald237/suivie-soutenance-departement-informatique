@@ -1,8 +1,11 @@
-from django.shortcuts import render, redirect
+import asyncio
+from django.http import JsonResponse, StreamingHttpResponse
+from django.shortcuts import get_object_or_404, render, redirect
 from ..models import Document, Folder, Student, StudentSession, Theme
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from .admin import admin_index
+from asgiref.sync import sync_to_async
 
 @csrf_exempt
 @login_required(login_url='login')
@@ -105,3 +108,29 @@ def notification(request):
 def errors_404():
     pass
 
+
+
+@csrf_exempt
+def get_content(request,id):
+    document = get_object_or_404(Document, id=id)
+    content = document.content
+
+    return JsonResponse({'content': content})
+
+async def sse_updates(request, id):
+    async def event_stream():
+        document = await sync_to_async(get_object_or_404)(Document, id=id)  
+        initial_content = document.content
+        yield f"data: {initial_content}\n\n"
+
+        while True:
+            await asyncio.sleep(1)  
+            document = await sync_to_async(Document.objects.get)(id=id) # type: ignore
+            new_content = document.content
+            #if new_content != initial_content:
+            initial_content = new_content
+            yield f"data: {initial_content}\n\n"
+
+    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
+    return response
