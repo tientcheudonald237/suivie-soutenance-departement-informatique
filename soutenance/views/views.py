@@ -1,12 +1,12 @@
+import asyncio
+from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from ..models import Document, Folder, Student, StudentSession, Theme
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from .admin import admin_index
-import time
-import asyncio
 from asgiref.sync import sync_to_async
-from django.http import JsonResponse,StreamingHttpResponse
+
 @csrf_exempt
 @login_required(login_url='login')
 def home(request):
@@ -108,6 +108,15 @@ def notification(request):
 def errors_404():
     pass
 
+
+
+@csrf_exempt
+def get_content(request,id):
+    document = get_object_or_404(Document, id=id)
+    content = document.content
+
+    return JsonResponse({'content': content})
+
 async def sse_updates(request, id):
     async def event_stream():
         document = await sync_to_async(get_object_or_404)(Document, id=id)  
@@ -116,7 +125,7 @@ async def sse_updates(request, id):
 
         while True:
             await asyncio.sleep(1)  
-            document = await sync_to_async(Document.objects.get)(id=id)
+            document = await sync_to_async(Document.objects.get)(id=id) # type: ignore
             new_content = document.content
             #if new_content != initial_content:
             initial_content = new_content

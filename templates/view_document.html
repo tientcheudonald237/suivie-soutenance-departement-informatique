@@ -211,8 +211,110 @@
     }
 </script>
 <script type="text/javascript">
+ 
+function auto_save() {       
+        var ckeditorInstance = CKEDITOR.instances.id_content;
+        var documentId = document.getElementById('id_document').value;
+        
+        
+        if (ckeditorInstance) {
+            var content = ckeditorInstance.getData();
+            console.log("Content before sending:", content);
+    
+            var xhr = new XMLHttpRequest();
+            var url = "/auto_save/" + documentId + "/";
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+            var data = 'content=' + encodeURIComponent(content);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log('Document saved successfully.');
+                } else {
+                    console.error('Erreur lors de l\'enregistrement du document :', xhr.statusText);
+                }
+            };
+            xhr.send(data);
+        }else{
+            console.error('ckeditorInstance is undefined 1');
+        }
+    }
+function sse()
+{
+    var documentId = document.getElementById('id_document').value;
 
-    setInterval(auto_save, 5000);
+    document.addEventListener('DOMContentLoaded', function() {
+    const sseUrl = '/sse-updates/'+ documentId+'/';
+    const eventSource = new EventSource(sseUrl);
+
+    console.log("--------------------------------------------" + window.location.host);
+
+    // CKEDITOR.replace('id_content', {
+    //     on: {
+    //         change: function () {
+    //             const content = this.getData();
+    //             fetch('/update-content/', {
+    //                 method: 'POST',
+    //                 headers: {
+    //                     'Content-Type': 'application/x-www-form-urlencoded',
+    //                     'X-CSRFToken': getCookie('csrftoken')  // Include the CSRF token
+    //                 },
+    //                 body: `content=${encodeURIComponent(content)}`
+    //             });
+    //         }
+    //     }
+    // });
+
+    let lastReceivedResult = null;
+
+    eventSource.onmessage = function (e) {
+        const result = e.data;
+        var ckeditorInstance = CKEDITOR.instances.id_content;
+
+        if (ckeditorInstance) {
+            if (result !== lastReceivedResult) {
+                ckeditorInstance.document.getBody().setHtml(result);
+                lastReceivedResult = result;
+
+                var editorRange = ckeditorInstance.createRange();
+                editorRange.moveToElementEditEnd(ckeditorInstance.editable());
+                editorRange.select();
+
+                console.log(result);
+            } else {
+                console.log('Message redundant, not processed.');
+            }
+        } else {
+            console.error('ckeditorInstance is undefined');
+        }
+    };
+
+    // Function to get the CSRF token from the cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+         
+ console.log("RODRIGUEDO");          
+}
+sse();
+setInterval(auto_save,1000);
+</script>
+
+<!-- <script type="text/javascript">
+
 
     function auto_save() {       
         var ckeditorInstance = CKEDITOR.instances.id_content;
@@ -241,9 +343,8 @@
             console.error('ckeditorInstance is undefined 1');
         }
     }
-    function sse()
-{
-    var documentId = document.getElementById('id_document').value;
+</script>  -->
+<!-- <script type="text/javascript">
 
     document.addEventListener('DOMContentLoaded', function() {
     const sseUrl = 'https://suivie-soutenance-departement.onrender.com/sse-updates/'+ documentId+'/';
@@ -352,12 +453,12 @@ sse();
 
                 console.log(result);
             } else {
-                console.log('Message redondant, non traité.');
+                console.log('Message r0edondant, non traité.');
             }
         } else {
             console.error('ckeditorInstance is undefined');
         }
-    };
+    }; 
 
 
 </script> -->
